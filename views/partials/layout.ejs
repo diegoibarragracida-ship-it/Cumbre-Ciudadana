@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> · Cumbre Ciudadana</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Piazzolla:ital,wght@0,500;0,600;0,700;1,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a href="/" class="brand">
+        <span class="seal" aria-hidden="true">
+          <svg viewBox="0 0 64 64" width="34" height="34">
+            <circle cx="32" cy="32" r="30" fill="none" stroke="currentColor" stroke-width="2"/>
+            <circle cx="32" cy="32" r="24" fill="none" stroke="currentColor" stroke-width="1"/>
+            <path d="M32 14 L38 28 L52 30 L41 39 L44 53 L32 45 L20 53 L23 39 L12 30 L26 28 Z" fill="currentColor" opacity="0.9"/>
+          </svg>
+        </span>
+        <span class="brand-text">
+          <strong>Cumbre Ciudadana</strong>
+          <small>Región Altas Montañas · Veracruz</small>
+        </span>
+      </a>
+      <nav class="header-nav">
+        <% if (user) { %>
+          <% if (isAdmin) { %><a href="/admin" class="nav-link">Panel</a><% } %>
+          <span class="user-chip">
+            <% if (user.photo) { %><img src="<%= user.photo %>" alt=""><% } %>
+            <%= user.name.split(' ')[0] %>
+          </span>
+          <a href="/auth/logout" class="btn btn-ghost">Salir</a>
+        <% } else { %>
+          <a href="/auth/google" class="btn btn-google">Entrar con Google</a>
+          <a href="/auth/facebook" class="btn btn-facebook">Entrar con Facebook</a>
+        <% } %>
+      </nav>
+    </div>
+  </header>
+
+  <div class="disclaimer-bar">
+    <div class="wrap">
+      Ejercicio ciudadano de opinión, sin carácter oficial ni vínculo con autoridades electorales. Un voto por persona y distrito.
+    </div>
+  </div>
+
+  <main class="wrap main-content">
+    <%- body %>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap">
+      <p>Cumbre Ciudadana · Región Altas Montañas de Veracruz — plataforma independiente de opinión pública.</p>
+    </div>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<h1 class="page-title">Panel de administración</h1>
+
+<section class="admin-grid">
+  <div class="admin-block">
+    <h2>Nuevo distrito</h2>
+    <form action="/admin/distrito" method="POST" class="admin-form">
+      <label>Nombre <input type="text" name="name" placeholder="Ej. Distrito Local 15 - Orizaba" required></label>
+      <label>Tipo
+        <select name="type" required>
+          <option value="local">Local</option>
+          <option value="federal">Federal</option>
+        </select>
+      </label>
+      <label>Número <input type="number" name="number" placeholder="15"></label>
+      <button type="submit" class="btn btn-vote">Agregar distrito</button>
+    </form>
+
+    <table class="admin-table">
+      <thead><tr><th>#</th><th>Nombre</th><th>Tipo</th><th></th></tr></thead>
+      <tbody>
+        <% districts.forEach(function(d){ %>
+          <tr>
+            <td><%= d.number || '—' %></td>
+            <td><%= d.name %></td>
+            <td><span class="tag tag-<%= d.type %>"><%= d.type %></span></td>
+            <td>
+              <form action="/admin/distrito/<%= d._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este distrito?');">
+                <button type="submit" class="btn btn-ghost small">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="admin-block">
+    <h2>Nuevo candidato</h2>
+    <form action="/admin/candidato" method="POST" class="admin-form">
+      <label>Nombre <input type="text" name="name" required></label>
+      <label>Partido / coalición <input type="text" name="party" required></label>
+      <label>URL de foto <input type="url" name="photoUrl" placeholder="https://…"></label>
+      <label>Biografía <textarea name="bio" rows="3"></textarea></label>
+      <label>Distrito
+        <select name="district" required>
+          <% districts.forEach(function(d){ %>
+            <option value="<%= d._id %>"><%= d.name %></option>
+          <% }); %>
+        </select>
+      </label>
+      <button type="submit" class="btn btn-vote">Agregar candidato</button>
+    </form>
+
+    <table class="admin-table">
+      <thead><tr><th>Candidato</th><th>Distrito</th><th></th></tr></thead>
+      <tbody>
+        <% candidates.forEach(function(c){ %>
+          <tr>
+            <td><%= c.name %> <span class="muted">(<%= c.party %>)</span></td>
+            <td><%= c.district ? c.district.name : '—' %></td>
+            <td>
+              <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');">
+                <button type="submit" class="btn btn-ghost small">Eliminar</button>
+              </form>
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+</section>
