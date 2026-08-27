@@ -36,10 +36,61 @@
 
   <div class="admin-block">
     <h2>Nuevo candidato</h2>
-    <form action="/admin/candidato" method="POST" class="admin-form">
+    <form action="/admin/candidato" method="POST" class="admin-form" enctype="multipart/form-data">
       <label>Nombre <input type="text" name="name" required></label>
-      <label>Partido / coalición <input type="text" name="party" required></label>
-      <label>URL de foto <input type="url" name="photoUrl" placeholder="https://…"></label>
+
+      <label>Foto (subir desde tu PC)
+        <input type="file" name="photo" accept="image/*">
+      </label>
+      <label>…o URL de foto (si no subes archivo)
+        <input type="url" name="photoUrl" placeholder="https://…">
+      </label>
+
+      <fieldset class="admin-fieldset">
+        <legend>Partido / coalición</legend>
+
+        <label class="inline-radio">
+          <input type="radio" name="partyType" value="partido" checked onchange="cumbreTogglePartyMode()"> Partido único
+        </label>
+        <label class="inline-radio">
+          <input type="radio" name="partyType" value="coalicion" onchange="cumbreTogglePartyMode()"> Coalición (varios partidos)
+        </label>
+
+        <div id="party-single-wrap">
+          <label>Partido
+            <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty()">
+              <% parties.forEach(function(p){ %>
+                <option value="<%= p.key %>" data-color="<%= p.color %>"><%= p.name %></option>
+              <% }); %>
+            </select>
+          </label>
+        </div>
+
+        <div id="party-coalition-wrap" style="display:none;">
+          <p class="muted">Marca los partidos que forman la coalición:</p>
+          <div class="party-checkbox-grid">
+            <% parties.forEach(function(p){ %>
+              <% if (p.key !== 'otro') { %>
+                <label class="inline-check">
+                  <input type="checkbox" name="partyKeys" value="<%= p.key %>">
+                  <span class="party-swatch" style="background:<%= p.color %>;"></span>
+                  <%= p.name %>
+                </label>
+              <% } %>
+            <% }); %>
+          </div>
+        </div>
+
+        <div id="party-manual-wrap" style="display:none;">
+          <label>Nombre del partido/candidatura (manual)
+            <input type="text" name="partyManual" placeholder="Ej. Partido local X">
+          </label>
+          <label>Color del partido (para la luz LED de la tarjeta)
+            <input type="color" name="colorManual" value="#3EE6D0">
+          </label>
+        </div>
+      </fieldset>
+
       <label>Biografía <textarea name="bio" rows="3"></textarea></label>
       <label>Distrito
         <select name="district" required>
@@ -51,12 +102,33 @@
       <button type="submit" class="btn btn-vote">Agregar candidato</button>
     </form>
 
+    <script>
+      function cumbreTogglePartyMode() {
+        const isCoalicion = document.querySelector('input[name="partyType"]:checked').value === 'coalicion';
+        document.getElementById('party-single-wrap').style.display = isCoalicion ? 'none' : '';
+        document.getElementById('party-coalition-wrap').style.display = isCoalicion ? '' : 'none';
+        cumbreToggleManualParty();
+      }
+      function cumbreToggleManualParty() {
+        const isCoalicion = document.querySelector('input[name="partyType"]:checked').value === 'coalicion';
+        const single = document.getElementById('party-single-select');
+        const isOtro = !isCoalicion && single.value === 'otro';
+        document.getElementById('party-manual-wrap').style.display = isOtro ? '' : 'none';
+      }
+    </script>
+
     <table class="admin-table">
       <thead><tr><th>Candidato</th><th>Distrito</th><th></th></tr></thead>
       <tbody>
         <% candidates.forEach(function(c){ %>
           <tr>
-            <td><%= c.name %> <span class="muted">(<%= c.party %>)</span></td>
+            <td>
+              <%= c.name %>
+              <span class="muted">(<%= c.party %>)</span>
+              <% if (c.partyColors && c.partyColors.length) { %>
+                <% c.partyColors.forEach(function(col){ %><span class="party-swatch" style="background:<%= col %>;"></span><% }); %>
+              <% } %>
+            </td>
             <td><%= c.district ? c.district.name : '—' %></td>
             <td>
               <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');">

@@ -1,9 +1,11 @@
 <p class="crumb"><a href="/">Inicio</a> / <a href="/distrito/<%= candidate.district._id %>"><%= candidate.district.name %></a></p>
 
 <section class="candidate-detail">
-  <div class="candidate-photo-frame large">
-    <img src="<%= candidate.photoUrl %>" alt="Foto de <%= candidate.name %>" onerror="this.src='/img/default-avatar.svg'">
-    <span class="stamp" aria-hidden="true">Perfil</span>
+  <div class="party-glow" style="--glow: <%= (candidate.partyColors && candidate.partyColors.length ? candidate.partyColors : ['#3EE6D0']).join(',') %>;">
+    <div class="candidate-photo-frame large">
+      <img src="<%= candidate.photoUrl %>" alt="Foto de <%= candidate.name %>" onerror="this.src='/img/default-avatar.svg'">
+      <span class="stamp" aria-hidden="true">Perfil</span>
+    </div>
   </div>
   <div class="candidate-detail-info">
     <h1><%= candidate.name %></h1>
