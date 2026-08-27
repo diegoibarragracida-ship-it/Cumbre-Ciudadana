@@ -14,6 +14,14 @@ const app = express();
 // --- Base de datos ---
 connectDB();
 
+// Render (y la mayoría de PaaS) corren la app detrás de un proxy que
+// termina el HTTPS. Sin esto, Express no confía en "x-forwarded-proto"
+// y cree que la conexión es HTTP, por lo que nunca setea cookies "secure".
+// Eso es lo que hace que el login "no pegue": el OAuth funciona, pero
+// la cookie de sesión no se guarda y en la siguiente carga vuelves a
+// aparecer como no logueado.
+app.set('trust proxy', 1);
+
 // --- Vistas ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -32,7 +40,8 @@ app.use(session({
   store: MongoStore.create({ mongoUrl: process.env.MONGO_URI }),
   cookie: {
     maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
-    secure: process.env.NODE_ENV === 'production'
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax'
   }
 }));
 
