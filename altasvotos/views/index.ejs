@@ -1,0 +1,43 @@
+<section class="hero">
+  <p class="eyebrow">Boletín ciudadano · en curso</p>
+  <h1>¿Quién va adelante en tu distrito?</h1>
+  <p class="hero-sub">Consulta de opinión sobre las candidaturas locales y federales de la región de las Altas Montañas de Veracruz. Entra con tu cuenta, elige tu distrito y emite tu voto de opinión.</p>
+</section>
+
+<section class="ledger">
+  <div class="ledger-col">
+    <h2 class="ledger-title"><span class="tag tag-federal">Federal</span> Distritos federales</h2>
+    <% if (federal.length === 0) { %>
+      <p class="empty">Aún no se han registrado distritos federales.</p>
+    <% } %>
+    <ol class="ledger-list">
+      <% federal.forEach(function(d){ %>
+        <li>
+          <a href="/distrito/<%= d._id %>">
+            <span class="ledger-num"><%= d.number ? String(d.number).padStart(2,'0') : '—' %></span>
+            <span class="ledger-name"><%= d.name %></span>
+            <span class="ledger-arrow">→</span>
+          </a>
+        </li>
+      <% }); %>
+    </ol>
+  </div>
+
+  <div class="ledger-col">
+    <h2 class="ledger-title"><span class="tag tag-local">Local</span> Distritos locales</h2>
+    <% if (local.length === 0) { %>
+      <p class="empty">Aún no se han registrado distritos locales.</p>
+    <% } %>
+    <ol class="ledger-list">
+      <% local.forEach(function(d){ %>
+        <li>
+          <a href="/distrito/<%= d._id %>">
+            <span class="ledger-num"><%= d.number ? String(d.number).padStart(2,'0') : '—' %></span>
+            <span class="ledger-name"><%= d.name %></span>
+            <span class="ledger-arrow">→</span>
+          </a>
+        </li>
+      <% }); %>
+    </ol>
+  </div>
+</section>

@@ -1,0 +1,41 @@
+<p class="crumb"><a href="/">Inicio</a> / <span class="tag tag-<%= district.type %>"><%= district.type === 'federal' ? 'Federal' : 'Local' %></span></p>
+<h1 class="page-title"><%= district.name %></h1>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Resultados en vivo</h2>
+    <span class="live-dot">● en vivo</span>
+  </div>
+  <div id="results-chart" class="bulletin-bars">
+    <p class="empty">Cargando resultados…</p>
+  </div>
+</section>
+
+<section class="candidate-grid">
+  <% candidates.forEach(function(c){ %>
+    <article class="candidate-card">
+      <a href="/candidato/<%= c._id %>" class="candidate-photo-frame">
+        <img src="<%= c.photoUrl %>" alt="Foto de <%= c.name %>" onerror="this.src='/img/default-avatar.svg'">
+        <span class="stamp" aria-hidden="true">Perfil</span>
+      </a>
+      <div class="candidate-info">
+        <h3><a href="/candidato/<%= c._id %>"><%= c.name %></a></h3>
+        <p class="party"><%= c.party %></p>
+        <% if (myVote === c._id.toString()) { %>
+          <p class="voted-flag">✓ Tu voto actual</p>
+        <% } else { %>
+          <form action="/voto/<%= c._id %>" method="POST">
+            <button type="submit" class="btn btn-vote"><%= typeof myVote === 'string' && myVote ? 'Cambiar mi voto a este' : 'Votar por este candidato' %></button>
+          </form>
+        <% } %>
+      </div>
+    </article>
+  <% }); %>
+  <% if (candidates.length === 0) { %>
+    <p class="empty">Aún no hay candidatos registrados para este distrito.</p>
+  <% } %>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>window.DISTRICT_ID = "<%= district._id %>";</script>
+<script src="/js/results.js"></script>
