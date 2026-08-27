@@ -266,23 +266,28 @@ a { color: inherit; }
 }
 .candidate-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
 
-/* ===== Luz LED del partido, gira alrededor del perimetro de la tarjeta =====
-   Se aplica envolviendo la tarjeta en un div.party-glow con --glow definido
-   inline (un color = partido unico, varios colores separados por coma =
-   coalicion, y se ve como una barra de luces multicolor girando). */
-.party-glow { position: relative; border-radius: 18px; isolation: isolate; }
+/* ===== Luz LED del partido: una luz nitida que viaja pegada al borde
+   exacto de la tarjeta (no un resplandor difuso detras). Se logra con
+   un anillo delgado (padding) que deja ver, solo en esa franja, una capa
+   giratoria de conic-gradient. El contenido de la tarjeta (con su propio
+   fondo solido) tapa todo el centro, asi la luz solo se ve en el borde.
+   Se aplica envolviendo la tarjeta en un div.party-glow. El color (o
+   colores, si es coalicion) se pasa por la variable --glow-stops, ya
+   armada como lista de "color grados" lista para conic-gradient. */
+.party-glow { position: relative; border-radius: 18px; padding: 2.5px; overflow: hidden; isolation: isolate; }
 .party-glow::before {
   content: '';
   position: absolute;
-  inset: -3px;
-  border-radius: inherit;
-  background: conic-gradient(var(--glow, #3EE6D0), transparent 30%, var(--glow, #3EE6D0) 65%, transparent 95%);
-  filter: blur(3px) drop-shadow(0 0 6px var(--glow, #3EE6D0)) drop-shadow(0 0 14px var(--glow, #3EE6D0));
-  animation: party-spin 3.2s linear infinite;
+  top: 50%; left: 50%;
+  width: 300%; height: 300%;
+  transform: translate(-50%, -50%) rotate(0deg);
+  background: conic-gradient(from 0deg, var(--glow-stops, transparent 0deg, #3EE6D0 4deg, transparent 24deg, transparent 360deg));
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.5));
+  animation: party-spin 2.6s linear infinite;
   z-index: 0;
 }
 .party-glow > * { position: relative; z-index: 1; }
-@keyframes party-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes party-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .party-glow::before { animation: none; } }
 
 .candidate-photo-frame { position: relative; display: block; aspect-ratio: 4/5; background: var(--bg-alt); }

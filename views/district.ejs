@@ -29,9 +29,29 @@
   </ul>
 </section>
 
+<%
+  // Arma los "tramos de luz" del anillo LED: un tramo brillante por cada
+  // color del partido (o de cada partido, si es coalicion), repartidos
+  // parejo alrededor de las 360 grados.
+  function buildGlowStops(colors) {
+    const list = (colors && colors.length) ? colors : ['#3EE6D0'];
+    const n = list.length;
+    const arc = 360 / n;
+    const bright = Math.min(14, arc * 0.35);
+    const stops = [];
+    list.forEach((c, i) => {
+      const start = i * arc;
+      stops.push(`transparent ${start}deg`);
+      stops.push(`${c} ${(start + bright / 2).toFixed(1)}deg`);
+      stops.push(`transparent ${(start + bright).toFixed(1)}deg`);
+    });
+    stops.push('transparent 360deg');
+    return stops.join(', ');
+  }
+%>
 <section class="candidate-grid">
   <% candidates.forEach(function(c){ %>
-    <div class="party-glow" style="--glow: <%= (c.partyColors && c.partyColors.length ? c.partyColors : ['#3EE6D0']).join(',') %>;">
+    <div class="party-glow" style="--glow-stops: <%= buildGlowStops(c.partyColors) %>;">
       <article class="candidate-card">
         <a href="/candidato/<%= c._id %>" class="candidate-photo-frame">
           <img src="<%= c.photoUrl %>" alt="Foto de <%= c.name %>" onerror="this.src='/img/default-avatar.svg'">

@@ -1,7 +1,24 @@
 <p class="crumb"><a href="/">Inicio</a> / <a href="/distrito/<%= candidate.district._id %>"><%= candidate.district.name %></a></p>
 
+<%
+  function buildGlowStops(colors) {
+    const list = (colors && colors.length) ? colors : ['#3EE6D0'];
+    const n = list.length;
+    const arc = 360 / n;
+    const bright = Math.min(14, arc * 0.35);
+    const stops = [];
+    list.forEach((c, i) => {
+      const start = i * arc;
+      stops.push(`transparent ${start}deg`);
+      stops.push(`${c} ${(start + bright / 2).toFixed(1)}deg`);
+      stops.push(`transparent ${(start + bright).toFixed(1)}deg`);
+    });
+    stops.push('transparent 360deg');
+    return stops.join(', ');
+  }
+%>
 <section class="candidate-detail">
-  <div class="party-glow" style="--glow: <%= (candidate.partyColors && candidate.partyColors.length ? candidate.partyColors : ['#3EE6D0']).join(',') %>;">
+  <div class="party-glow" style="--glow-stops: <%= buildGlowStops(candidate.partyColors) %>;">
     <div class="candidate-photo-frame large">
       <img src="<%= candidate.photoUrl %>" alt="Foto de <%= candidate.name %>" onerror="this.src='/img/default-avatar.svg'">
       <span class="stamp" aria-hidden="true">Perfil</span>
