@@ -2,7 +2,7 @@
   const container = document.getElementById('results-chart');
   if (!container || !window.DISTRICT_ID) return;
 
-  const PARTY_COLORS = ['#C98A2C', '#1F4B3F', '#8A2E2A', '#2B5F73', '#6B4A8A', '#4A5B2E'];
+  const PARTY_COLORS = ['#FF9A44', '#3EE6D0', '#7C9CFF', '#FF5D6C', '#B58CFF', '#6FE07A'];
 
   async function fetchResults() {
     try {
@@ -28,7 +28,7 @@
             <span class="bar-party">${escapeHtml(c.party)}</span>
           </div>
           <div class="bar-track">
-            <div class="bar-fill" style="width:${pct}%; background:${color};"></div>
+            <div class="bar-fill" style="width:${pct}%; background:${color}; box-shadow:0 0 12px 0 ${color}66;"></div>
           </div>
           <div class="bar-stats">
             <span class="bar-pct">${pct}%</span>
