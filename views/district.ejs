@@ -11,6 +11,24 @@
   </div>
 </section>
 
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Distribución de opinión</h2>
+  </div>
+  <div id="results-pie-wrap" style="max-width:340px;margin:0 auto;">
+    <canvas id="results-pie"></canvas>
+  </div>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Historial de votos</h2>
+  </div>
+  <ul id="vote-history" class="comment-list">
+    <li class="empty">Cargando historial…</li>
+  </ul>
+</section>
+
 <section class="candidate-grid">
   <% candidates.forEach(function(c){ %>
     <article class="candidate-card">

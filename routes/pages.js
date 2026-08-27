@@ -63,4 +63,23 @@ router.get('/api/distrito/:id/resultados', async (req, res) => {
   res.json(results);
 });
 
+// API: historial de votos del distrito (quien voto por quien)
+router.get('/api/distrito/:id/historial', async (req, res) => {
+  const votes = await Vote.find({ district: req.params.id })
+    .sort({ createdAt: -1 })
+    .limit(100)
+    .populate('user', 'name photo')
+    .populate('candidate', 'name party');
+
+  const historial = votes.map(v => ({
+    userName: v.user ? v.user.name : 'Usuario',
+    userPhoto: v.user ? v.user.photo : '',
+    candidateName: v.candidate ? v.candidate.name : 'Candidato eliminado',
+    party: v.candidate ? v.candidate.party : '',
+    date: v.createdAt
+  }));
+
+  res.json(historial);
+});
+
 module.exports = router;
