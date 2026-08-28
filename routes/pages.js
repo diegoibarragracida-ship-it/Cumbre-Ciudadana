@@ -1,9 +1,23 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const { ensureAuth } = require('./middleware');
 const District = require('../models/District');
 const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
 const Vote = require('../models/Vote');
+const PARTIES = require('../config/parties');
+
+// Igual que en /admin: la foto se guarda en memoria y se convierte a
+// base64 para meterla directo en Mongo (el disco de Render es efimero).
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) return cb(new Error('El archivo debe ser una imagen'));
+    cb(null, true);
+  }
+});
 
 // Politica de privacidad (requerida por Google/Facebook OAuth)
 router.get('/privacidad', (req, res) => {
@@ -36,7 +50,67 @@ router.get('/distrito/:id', async (req, res) => {
     if (v) myVote = v.candidate.toString();
   }
 
-  res.render('district', { title: district.name, district, candidates, myVote, error: req.query.error });
+  res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error });
+});
+
+// Un ciudadano agrega su propio candidato porque no lo encontro en la lista
+// del distrito. Reglas del negocio:
+//  - Requiere estar logueado (ensureAuth).
+//  - Solo puede ELEGIR nombre, foto (opcional) y partido (uno de la lista) o
+//    marcarlo como independiente. No hay opcion de editar/eliminar aqui:
+//    eso queda exclusivo para /admin (ensureAdmin).
+//  - Su voto se registra en automatico para el candidato recien creado.
+router.post('/distrito/:id/agregar-candidato', ensureAuth, upload.single('photo'), async (req, res) => {
+  try {
+    const district = await District.findById(req.params.id);
+    if (!district) return res.status(404).send('Distrito no encontrado');
+
+    const name = (req.body.name || '').trim();
+    if (!name) return res.redirect(`/distrito/${district._id}?error=nombre_requerido`);
+
+    const isIndependent = req.body.partyMode !== 'partido';
+    let partyLabel, partyColors;
+
+    if (!isIndependent) {
+      const matched = PARTIES.find(p => p.key === req.body.partyKey && p.key !== 'otro');
+      if (matched) {
+        partyLabel = matched.name;
+        partyColors = [matched.color];
+      }
+    }
+    if (!partyLabel) {
+      partyLabel = 'Independiente';
+      partyColors = ['#9AA5B1'];
+    }
+
+    let photoUrl;
+    if (req.file) {
+      photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    }
+
+    const candidate = await Candidate.create({
+      name,
+      party: partyLabel,
+      partyType: 'partido',
+      partyColors,
+      photoUrl,
+      district: district._id,
+      addedByUser: req.user._id,
+      isCitizenAdded: true
+    });
+
+    // El voto de quien lo agrega cuenta en automatico para su candidato.
+    await Vote.findOneAndUpdate(
+      { user: req.user._id, district: district._id },
+      { user: req.user._id, district: district._id, candidate: candidate._id, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    res.redirect(`/distrito/${district._id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error al agregar candidato: ' + err.message);
+  }
 });
 
 // Detalle de candidato: bio + comentarios

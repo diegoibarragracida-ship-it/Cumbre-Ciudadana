@@ -30,6 +30,9 @@
         <div class="candidate-info">
           <h3><a href="/candidato/<%= c._id %>"><%= c.name %></a></h3>
           <p class="party"><%= c.party %></p>
+          <% if (c.isCitizenAdded) { %>
+            <p class="tag tag-citizen">Agregado por un ciudadano</p>
+          <% } %>
           <% if (myVote === c._id.toString()) { %>
             <p class="voted-flag">✓ Tu voto actual</p>
           <% } else { %>
@@ -44,6 +47,60 @@
   <% if (candidates.length === 0) { %>
     <p class="empty">Aún no hay candidatos registrados para este distrito.</p>
   <% } %>
+</section>
+
+<section class="results-panel suggest-panel">
+  <details>
+    <summary>¿No encuentras a tu candidato? Agrégalo aquí</summary>
+    <p class="muted" style="margin-top:10px;">
+      Escribe su nombre, elige su partido (o márcalo como independiente) y sube
+      una foto si quieres — es opcional. Tu voto quedará registrado en automático
+      para el candidato que agregues. Solo el administrador puede editarlo o
+      eliminarlo después.
+    </p>
+
+    <% if (error === 'nombre_requerido') { %>
+      <p class="contact-alert contact-alert-err">Escribe el nombre del candidato.</p>
+    <% } %>
+
+    <form action="/distrito/<%= district._id %>/agregar-candidato" method="POST" enctype="multipart/form-data" class="admin-form">
+      <label>Nombre del candidato <input type="text" name="name" required></label>
+
+      <label>Foto (opcional)
+        <input type="file" name="photo" accept="image/*">
+      </label>
+
+      <fieldset class="admin-fieldset">
+        <legend>Partido</legend>
+        <label class="inline-radio">
+          <input type="radio" name="partyMode" value="independiente" checked onchange="cumbreToggleSuggestParty()"> Es candidato independiente
+        </label>
+        <label class="inline-radio">
+          <input type="radio" name="partyMode" value="partido" onchange="cumbreToggleSuggestParty()"> Pertenece a un partido
+        </label>
+        <div id="suggest-party-wrap" style="display:none;">
+          <label>Partido
+            <select name="partyKey" id="suggest-party-select">
+              <% parties.forEach(function(p){ %>
+                <% if (p.key !== 'otro') { %>
+                  <option value="<%= p.key %>"><%= p.name %></option>
+                <% } %>
+              <% }); %>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-vote">Agregar y votar por él/ella</button>
+    </form>
+
+    <script>
+      function cumbreToggleSuggestParty() {
+        const isParty = document.querySelector('input[name="partyMode"]:checked').value === 'partido';
+        document.getElementById('suggest-party-wrap').style.display = isParty ? '' : 'none';
+      }
+    </script>
+  </details>
 </section>
 
 <section class="results-panel">

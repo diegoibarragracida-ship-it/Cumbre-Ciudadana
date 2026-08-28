@@ -138,6 +138,9 @@
               <% if (c.partyColors && c.partyColors.length) { %>
                 <% c.partyColors.forEach(function(col){ %><span class="party-swatch" style="background:<%= col %>;"></span><% }); %>
               <% } %>
+              <% if (c.isCitizenAdded) { %>
+                <span class="tag tag-citizen">Sugerido por ciudadano</span>
+              <% } %>
             </td>
             <td><%= c.district ? c.district.name : '—' %></td>
             <td>
