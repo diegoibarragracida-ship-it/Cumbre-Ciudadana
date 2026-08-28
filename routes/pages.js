@@ -7,7 +7,6 @@ const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
 const Vote = require('../models/Vote');
 const PARTIES = require('../config/parties');
-const mongoose = require('mongoose');
 
 // Igual que en /admin: la foto se guarda en memoria y se convierte a
 // base64 para meterla directo en Mongo (el disco de Render es efimero).
@@ -39,22 +38,30 @@ router.get('/', async (req, res) => {
 });
 
 // Detalle de distrito: candidatos + grafica
+// NOTA: ya no se valida el formato del ID con mongoose.isValidObjectId
+// antes de buscar. Esa validacion estaba rechazando IDs de distrito
+// reales (como "f1", que no tiene el formato largo de Mongo) que si
+// existen en la base de datos. En su lugar, el try/catch de abajo
+// atrapa cualquier error de busqueda (ID realmente invalido, basura,
+// etc.) y muestra "no encontrado" sin romper nada.
 router.get('/distrito/:id', async (req, res) => {
-  if (!mongoose.isValidObjectId(req.params.id)) {
-    return res.status(404).send('Distrito no encontrado');
+  try {
+    const district = await District.findById(req.params.id);
+    if (!district) return res.status(404).send('Distrito no encontrado');
+
+    const candidates = await Candidate.find({ district: district._id });
+
+    let myVote = null;
+    if (req.isAuthenticated()) {
+      const v = await Vote.findOne({ user: req.user._id, district: district._id });
+      if (v) myVote = v.candidate.toString();
+    }
+
+    res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error });
+  } catch (err) {
+    console.error(err);
+    res.status(404).send('Distrito no encontrado');
   }
-  const district = await District.findById(req.params.id);
-  if (!district) return res.status(404).send('Distrito no encontrado');
-
-  const candidates = await Candidate.find({ district: district._id });
-
-  let myVote = null;
-  if (req.isAuthenticated()) {
-    const v = await Vote.findOne({ user: req.user._id, district: district._id });
-    if (v) myVote = v.candidate.toString();
-  }
-
-  res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error });
 });
 
 // Un ciudadano agrega su propio candidato porque no lo encontro en la lista
@@ -66,9 +73,6 @@ router.get('/distrito/:id', async (req, res) => {
 //  - Su voto se registra en automatico para el candidato recien creado.
 router.post('/distrito/:id/agregar-candidato', ensureAuth, upload.single('photo'), async (req, res) => {
   try {
-    if (!mongoose.isValidObjectId(req.params.id)) {
-      return res.status(404).send('Distrito no encontrado');
-    }
     const district = await District.findById(req.params.id);
     if (!district) return res.status(404).send('Distrito no encontrado');
 
@@ -122,52 +126,65 @@ router.post('/distrito/:id/agregar-candidato', ensureAuth, upload.single('photo'
 
 // Detalle de candidato: bio + comentarios
 router.get('/candidato/:id', async (req, res) => {
-  const candidate = await Candidate.findById(req.params.id).populate('district');
-  if (!candidate) return res.status(404).send('Candidato no encontrado');
+  try {
+    const candidate = await Candidate.findById(req.params.id).populate('district');
+    if (!candidate) return res.status(404).send('Candidato no encontrado');
 
-  const comments = await Comment.find({ candidate: candidate._id })
-    .populate('user', 'name photo')
-    .sort({ createdAt: -1 })
-    .limit(100);
+    const comments = await Comment.find({ candidate: candidate._id })
+      .populate('user', 'name photo')
+      .sort({ createdAt: -1 })
+      .limit(100);
 
-  let myVote = null;
-  if (req.isAuthenticated()) {
-    const v = await Vote.findOne({ user: req.user._id, district: candidate.district._id });
-    if (v) myVote = v.candidate.toString();
+    let myVote = null;
+    if (req.isAuthenticated()) {
+      const v = await Vote.findOne({ user: req.user._id, district: candidate.district._id });
+      if (v) myVote = v.candidate.toString();
+    }
+
+    res.render('candidate', { title: candidate.name, candidate, comments, myVote, error: req.query.error });
+  } catch (err) {
+    console.error(err);
+    res.status(404).send('Candidato no encontrado');
   }
-
-  res.render('candidate', { title: candidate.name, candidate, comments, myVote, error: req.query.error });
 });
 
 // API: resultados en vivo para la grafica (Chart.js)
 router.get('/api/distrito/:id/resultados', async (req, res) => {
-  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: 'ID de distrito invalido' });
-  const candidates = await Candidate.find({ district: req.params.id });
-  const results = await Promise.all(candidates.map(async (c) => {
-    const votes = await Vote.countDocuments({ candidate: c._id });
-    return { id: c._id, name: c.name, party: c.party, partyColors: c.partyColors, votes };
-  }));
-  res.json(results);
+  try {
+    const candidates = await Candidate.find({ district: req.params.id });
+    const results = await Promise.all(candidates.map(async (c) => {
+      const votes = await Vote.countDocuments({ candidate: c._id });
+      return { id: c._id, name: c.name, party: c.party, partyColors: c.partyColors, votes };
+    }));
+    res.json(results);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'ID de distrito invalido' });
+  }
 });
 
 // API: historial de votos del distrito (quien voto por quien)
 router.get('/api/distrito/:id/historial', async (req, res) => {
-  if (!mongoose.isValidObjectId(req.params.id)) return res.status(400).json({ error: 'ID de distrito invalido' });
-  const votes = await Vote.find({ district: req.params.id })
-    .sort({ createdAt: -1 })
-    .limit(100)
-    .populate('user', 'name photo')
-    .populate('candidate', 'name party');
+  try {
+    const votes = await Vote.find({ district: req.params.id })
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .populate('user', 'name photo')
+      .populate('candidate', 'name party');
 
-  const historial = votes.map(v => ({
-    userName: v.user ? v.user.name : 'Usuario',
-    userPhoto: v.user ? v.user.photo : '',
-    candidateName: v.candidate ? v.candidate.name : 'Candidato eliminado',
-    party: v.candidate ? v.candidate.party : '',
-    date: v.createdAt
-  }));
+    const historial = votes.map(v => ({
+      userName: v.user ? v.user.name : 'Usuario',
+      userPhoto: v.user ? v.user.photo : '',
+      candidateName: v.candidate ? v.candidate.name : 'Candidato eliminado',
+      party: v.candidate ? v.candidate.party : '',
+      date: v.createdAt
+    }));
 
-  res.json(historial);
+    res.json(historial);
+  } catch (err) {
+    console.error(err);
+    res.status(400).json({ error: 'ID de distrito invalido' });
+  }
 });
 
 module.exports = router;
