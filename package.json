@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed/seed.js",
+    "backup": "node seed/backup.js",
     "dev": "nodemon server.js"
   },
   "dependencies": {

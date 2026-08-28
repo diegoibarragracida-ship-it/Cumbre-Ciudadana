@@ -12,8 +12,9 @@
 // NOTA: Somos México fue obligado por el INE a cambiar su emblema y
 // color (usaban rosa, por confusión con un partido local). A la fecha
 // de este archivo no hay un hex oficial confirmado públicamente para
-// su nuevo color — quedó con un tono neutro provisional, AJÚSTALO en
-// cuanto tengas el color definitivo de su nuevo emblema.
+// su nuevo color. Se dejó en rosa por indicación directa del
+// administrador de esta plataforma — AJÚSTALO si confirmas el color
+// definitivo de su nuevo emblema.
 
 module.exports = [
   { key: 'morena', name: 'MORENA', color: '#9F2241' },
@@ -21,9 +22,9 @@ module.exports = [
   { key: 'pri', name: 'PRI', color: '#0D7137' },
   { key: 'pvem', name: 'PVEM', color: '#1AA64A' },
   { key: 'pt', name: 'PT', color: '#D52B1E' },
-  { key: 'mc', name: 'Movimiento Ciudadano', color: '#FF2D8C' },
+  { key: 'mc', name: 'Movimiento Ciudadano', color: '#FF6D02' },
   { key: 'paz', name: 'PAZ', color: '#7B2FBE' },
-  { key: 'somos-mx', name: 'Somos México', color: '#5B7FA6' },
+  { key: 'somos-mx', name: 'Somos México', color: '#FF4FA3' },
   // Opción libre para partidos/candidaturas locales que no están en
   // la lista nacional (ej. partidos locales de Veracruz) o para
   // cuando el admin prefiera escribir el nombre y color a mano.

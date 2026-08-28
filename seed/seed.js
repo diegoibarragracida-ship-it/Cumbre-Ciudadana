@@ -9,15 +9,44 @@
  * plataforma funcionando. Reemplázalos por los reales desde /admin antes
  * de publicar.
  *
- * Ejecutar con:  npm run seed
+ * IMPORTANTE - PROTECCION CONTRA BORRADO ACCIDENTAL:
+ * Este script se NIEGA a correr si ya existen distritos o candidatos en
+ * la base de datos, para no borrar por accidente datos reales que ya
+ * hayas cargado. Si de verdad quieres reiniciar todo (borrar lo que
+ * exista y volver a poner los datos de ejemplo), corre en su lugar:
+ *
+ *   npm run seed -- --force
+ *
+ * Uso normal (primera vez, base de datos vacia):
+ *   npm run seed
  */
 require('dotenv').config();
 const mongoose = require('mongoose');
 const District = require('../models/District');
 const Candidate = require('../models/Candidate');
 
+const FORCE = process.argv.includes('--force');
+
 async function run() {
   await mongoose.connect(process.env.MONGO_URI);
+
+  const existingDistricts = await District.countDocuments();
+  const existingCandidates = await Candidate.countDocuments();
+
+  if ((existingDistricts > 0 || existingCandidates > 0) && !FORCE) {
+    console.log('');
+    console.log('ABORTADO: ya existen datos en la base de datos');
+    console.log(`  - Distritos existentes: ${existingDistricts}`);
+    console.log(`  - Candidatos existentes: ${existingCandidates}`);
+    console.log('');
+    console.log('No se toco nada, para proteger tus datos reales.');
+    console.log('Si de verdad quieres borrar todo y reiniciar con datos de ejemplo, corre:');
+    console.log('  npm run seed -- --force');
+    console.log('');
+    await mongoose.disconnect();
+    process.exit(0);
+  }
+
   console.log('Conectado a MongoDB, sembrando datos...');
 
   await District.deleteMany({});
