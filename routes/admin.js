@@ -4,6 +4,7 @@ const multer = require('multer');
 const { ensureAuth, ensureAdmin } = require('./middleware');
 const District = require('../models/District');
 const Candidate = require('../models/Candidate');
+const ContactMessage = require('../models/ContactMessage');
 const PARTIES = require('../config/parties');
 
 // Guardamos la imagen en memoria y la convertimos a base64 para meterla
@@ -24,7 +25,8 @@ router.use(ensureAuth, ensureAdmin);
 router.get('/', async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
   const candidates = await Candidate.find().populate('district');
-  res.render('admin', { title: 'Panel de administracion', districts, candidates, parties: PARTIES });
+  const messages = await ContactMessage.find().sort({ createdAt: -1 }).limit(50);
+  res.render('admin', { title: 'Panel de administracion', districts, candidates, parties: PARTIES, messages });
 });
 
 // Crear distrito
@@ -90,6 +92,12 @@ router.post('/candidato', upload.single('photo'), async (req, res) => {
 // Eliminar candidato
 router.post('/candidato/:id/eliminar', async (req, res) => {
   await Candidate.findByIdAndDelete(req.params.id);
+  res.redirect('/admin');
+});
+
+// Marcar mensaje de contacto como atendido
+router.post('/mensaje/:id/atender', async (req, res) => {
+  await ContactMessage.findByIdAndUpdate(req.params.id, { status: 'atendido' });
   res.redirect('/admin');
 });
 

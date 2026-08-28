@@ -140,4 +140,34 @@
       </tbody>
     </table>
   </div>
+
+  <div class="admin-block">
+    <h2>Mensajes de contacto</h2>
+    <table class="admin-table">
+      <thead><tr><th>De</th><th>Asunto</th><th>Mensaje</th><th>Estado</th><th></th></tr></thead>
+      <tbody>
+        <% (typeof messages !== 'undefined' ? messages : []).forEach(function(m){ %>
+          <tr>
+            <td>
+              <%= m.name %>
+              <div class="muted"><%= m.phone || m.email || '' %></div>
+            </td>
+            <td><%= m.subject %></td>
+            <td style="max-width:280px;"><%= m.message %></td>
+            <td><%= m.status === 'atendido' ? '✓ Atendido' : 'Nuevo' %></td>
+            <td>
+              <% if (m.status !== 'atendido') { %>
+                <form action="/admin/mensaje/<%= m._id %>/atender" method="POST">
+                  <button type="submit" class="btn btn-ghost small" style="color:var(--cyan);">Marcar atendido</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }); %>
+        <% if (typeof messages === 'undefined' || messages.length === 0) { %>
+          <tr><td colspan="5" class="muted">Aún no hay mensajes.</td></tr>
+        <% } %>
+      </tbody>
+    </table>
+  </div>
 </section>

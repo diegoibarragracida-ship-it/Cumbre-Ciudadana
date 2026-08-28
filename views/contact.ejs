@@ -1,0 +1,85 @@
+<p class="crumb"><a href="/">Inicio</a> / Contacto</p>
+
+<section class="contact-hero">
+  <p class="eyebrow">Casa encuestadora</p>
+  <h1 class="page-title" style="margin-bottom:6px;">Contacta a <%= org.name %></h1>
+  <p class="hero-sub">
+    ¿Tienes dudas sobre la metodología, quieres reportar un problema o
+    proponer que agreguemos tu distrito o candidatura? Escríbenos —
+    respondemos más rápido por llamada o WhatsApp.
+  </p>
+</section>
+
+<section class="contact-grid">
+  <div class="contact-card contact-card-featured">
+    <span class="contact-card-tag">Respuesta más rápida</span>
+    <h2>Llamada o WhatsApp</h2>
+    <p class="contact-number"><%= org.phone %></p>
+    <div class="contact-actions">
+      <a class="btn btn-vote" style="width:auto;" href="https://wa.me/52<%= org.whatsapp %>?text=<%= encodeURIComponent('Hola, tengo una consulta sobre Cumbre Ciudadana.') %>" target="_blank" rel="noopener">
+        WhatsApp
+      </a>
+      <a class="btn btn-google" href="tel:+52<%= org.phone %>">
+        Llamar ahora
+      </a>
+    </div>
+  </div>
+
+  <% if (org.email) { %>
+  <div class="contact-card">
+    <span class="contact-card-tag">Alternativa</span>
+    <h2>Correo</h2>
+    <p class="contact-number" style="font-size:1.1rem;"><%= org.email %></p>
+    <div class="contact-actions">
+      <a class="btn btn-ghost" href="mailto:<%= org.email %>">Escribir correo</a>
+    </div>
+  </div>
+  <% } %>
+</section>
+
+<section class="contact-form-wrap">
+  <h2 class="contact-form-title">Envíanos un mensaje</h2>
+
+  <% if (sent) { %>
+    <p class="contact-alert contact-alert-ok">Tu mensaje se envió correctamente. Te contactaremos pronto.</p>
+  <% } %>
+  <% if (error) { %>
+    <p class="contact-alert contact-alert-err">Falta tu nombre o el mensaje. Inténtalo de nuevo.</p>
+  <% } %>
+
+  <form action="/contacto" method="POST" class="contact-form">
+    <div class="contact-form-row">
+      <label>Nombre <input type="text" name="name" required></label>
+      <label>Teléfono <input type="tel" name="phone" placeholder="Opcional"></label>
+    </div>
+    <div class="contact-form-row">
+      <label>Correo <input type="email" name="email" placeholder="Opcional"></label>
+      <label>Asunto
+        <select name="subject">
+          <option value="Consulta general">Consulta general</option>
+          <option value="Metodologia">Metodología del ejercicio</option>
+          <option value="Reportar un problema">Reportar un problema</option>
+          <option value="Agregar distrito o candidatura">Agregar distrito o candidatura</option>
+          <option value="Prensa">Prensa / medios</option>
+        </select>
+      </label>
+    </div>
+    <label>Mensaje <textarea name="message" rows="4" required></textarea></label>
+    <button type="submit" class="btn btn-vote" style="max-width:220px;">Enviar mensaje</button>
+  </form>
+</section>
+
+<section class="contact-trust">
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">100%</span>
+    <span>Ejercicio ciudadano independiente, sin fines electorales oficiales</span>
+  </div>
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">1</span>
+    <span>Voto de opinión por persona y distrito, verificado por cuenta de Google</span>
+  </div>
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">24/7</span>
+    <span>Resultados públicos y actualizados en vivo</span>
+  </div>
+</section>
