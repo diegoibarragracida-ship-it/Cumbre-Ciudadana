@@ -1,7 +1,27 @@
-<section class="hero">
+<section class="hero hero-lg">
   <p class="eyebrow">Boletín ciudadano · en curso</p>
   <h1>¿Quién va adelante en tu distrito?</h1>
   <p class="hero-sub">Consulta de opinión sobre las candidaturas locales y federales de la región de las Altas Montañas de Veracruz. Entra con tu cuenta, elige tu distrito y emite tu voto de opinión.</p>
+
+  <div class="hero-actions">
+    <a href="#distritos" class="btn btn-vote" style="width:auto;">Ver mi distrito</a>
+    <a href="/contacto" class="btn btn-ghost" style="text-decoration:none;">Quiero una plataforma así</a>
+  </div>
+
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <span class="hero-stat-num"><%= totalDistricts %></span>
+      <span class="hero-stat-label">Distritos activos</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num"><%= totalCandidates %></span>
+      <span class="hero-stat-label">Candidaturas registradas</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-num"><%= totalVotes %></span>
+      <span class="hero-stat-label">Votos de opinión emitidos</span>
+    </div>
+  </div>
 </section>
 
 <% if (error === 'auth_required') { %>
@@ -10,7 +30,7 @@
   </p>
 <% } %>
 
-<section class="ledger">
+<section class="ledger" id="distritos">
   <div class="ledger-col">
     <h2 class="ledger-title"><span class="tag tag-federal">Federal</span> Distritos federales</h2>
     <% if (federal.length === 0) { %>
@@ -84,10 +104,55 @@
   </div>
 </section>
 
-<section class="landing-cta">
-  <div>
-    <h2>¿Tienes dudas sobre la metodología o quieres reportar algo?</h2>
-    <p>Escríbenos por llamada, WhatsApp o el formulario de contacto.</p>
+<section class="landing-section-head">
+  <p class="landing-eyebrow">Lo que hacemos</p>
+  <h2>No solo esta plataforma — construimos a la medida</h2>
+  <p class="landing-section-sub">Cumbre Ciudadana es un ejemplo de lo que podemos construir para gobiernos, empresas, organizaciones o campañas que necesitan escuchar a su gente.</p>
+</section>
+
+<section class="services-grid">
+  <div class="service-card">
+    <div class="service-icon">🗳️</div>
+    <h3>Plataformas de opinión ciudadana</h3>
+    <p>Consultas y boletines de opinión por distrito o región, como Cumbre Ciudadana, con resultados en vivo y un voto verificado por persona.</p>
   </div>
-  <a href="/contacto" class="btn btn-vote" style="width:auto;">Ir a Contacto</a>
+  <div class="service-card">
+    <div class="service-icon">📊</div>
+    <h3>Encuestas y paneles de resultados</h3>
+    <p>Formularios de encuesta a la medida con gráficas, historial y exportación de resultados para tu equipo o tus clientes.</p>
+  </div>
+  <div class="service-card">
+    <div class="service-icon">🏛️</div>
+    <h3>Portales institucionales</h3>
+    <p>Sitios con panel de administración propio para que tu equipo publique, edite y controle el contenido sin depender de nosotros.</p>
+  </div>
+  <div class="service-card">
+    <div class="service-icon">🏢</div>
+    <h3>Votación interna para empresas</h3>
+    <p>Elecciones de mesa directiva, encuestas de clima laboral o consultas internas, con acceso controlado y resultados privados.</p>
+  </div>
+</section>
+
+<section class="landing-services">
+  <div class="landing-services-text">
+    <p class="landing-eyebrow">¿Buscas algo así para tu proyecto?</p>
+    <h2>Creamos plataformas de encuestas y participación ciudadana a la medida</h2>
+    <p>
+      Si eres un gobierno municipal, una empresa, una organización o una
+      persona interesada en tener tu propia plataforma de opinión, votación
+      interna o consulta ciudadana — con marca y colores propios, tu dominio,
+      y resultados en vivo — la podemos construir para ti.
+    </p>
+    <div class="landing-services-actions">
+      <a href="/contacto" class="btn btn-vote" style="width:auto;">Contáctanos</a>
+      <span class="muted">También resolvemos dudas sobre la metodología de este ejercicio.</span>
+    </div>
+  </div>
+  <ul class="landing-services-list">
+    <li>Marca, colores y dominio propios</li>
+    <li>Panel de administración a tu medida</li>
+    <li>Resultados en vivo, gráficas y reportes</li>
+    <li>Acceso seguro (Google) y un voto por persona</li>
+    <li>Historial transparente de participación</li>
+  </ul>
 </section>

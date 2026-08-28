@@ -15,7 +15,12 @@ router.get('/', async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
   const local = districts.filter(d => d.type === 'local');
   const federal = districts.filter(d => d.type === 'federal');
-  res.render('index', { title: 'Inicio', local, federal, error: req.query.error });
+  const totalVotes = await Vote.countDocuments();
+  const totalCandidates = await Candidate.countDocuments();
+  res.render('index', {
+    title: 'Inicio', local, federal, error: req.query.error,
+    totalVotes, totalCandidates, totalDistricts: districts.length
+  });
 });
 
 // Detalle de distrito: candidatos + grafica
