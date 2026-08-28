@@ -276,7 +276,10 @@ a { color: inherit; }
    sin cambiar el tono de fondo.
    --glow-solid: rebanadas solidas del/los color(es) real(es) del partido.
    Se aplica envolviendo la tarjeta en un div.party-glow. */
-.party-glow { position: relative; border-radius: 18px; padding: 8px; overflow: hidden; isolation: isolate; }
+.party-glow {
+  position: relative; border-radius: 18px; padding: 6px; overflow: hidden; isolation: isolate;
+  box-shadow: 0 0 10px 0 var(--glow-primary, #3EE6D0), 0 0 22px 3px var(--glow-primary, #3EE6D0);
+}
 .party-glow::before {
   content: '';
   position: absolute;
@@ -290,7 +293,7 @@ a { color: inherit; }
   top: 50%; left: 50%;
   width: 300%; height: 300%;
   transform: translate(-50%, -50%) rotate(0deg);
-  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.85) 10deg, transparent 26deg, transparent 360deg);
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,1) 12deg, transparent 34deg, transparent 360deg);
   mix-blend-mode: overlay;
   animation: party-spin 11s linear infinite;
   z-index: 1;
