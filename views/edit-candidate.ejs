@@ -1,0 +1,104 @@
+<p class="crumb"><a href="/admin">Panel</a> / Editar candidato</p>
+<h1 class="page-title">Editar candidato</h1>
+
+<section class="admin-block" style="max-width:560px;">
+  <form action="/admin/candidato/<%= candidate._id %>/editar" method="POST" class="admin-form" enctype="multipart/form-data">
+    <label>Nombre <input type="text" name="name" value="<%= candidate.name %>" required></label>
+
+    <label>Foto actual</label>
+    <img src="<%= candidate.photoUrl %>" alt="" style="width:90px;height:90px;object-fit:cover;border-radius:10px;border:1px solid var(--border);">
+
+    <label>Reemplazar foto (subir desde tu PC)
+      <input type="file" name="photo" accept="image/*">
+    </label>
+    <label>…o URL de foto nueva
+      <input type="url" name="photoUrl" placeholder="https://…">
+    </label>
+    <p class="muted">Si dejas ambos vacíos, se conserva la foto actual.</p>
+
+    <fieldset class="admin-fieldset">
+      <legend>Partido / coalición actual: <strong><%= candidate.party %></strong>
+        <% (candidate.partyColors || []).forEach(function(col){ %><span class="party-swatch" style="background:<%= col %>;"></span><% }); %>
+      </legend>
+
+      <label class="inline-radio">
+        <input type="radio" name="partyType" value="partido" <%= candidate.partyType !== 'coalicion' ? 'checked' : '' %> onchange="cumbreTogglePartyMode()"> Partido único
+      </label>
+      <label class="inline-radio">
+        <input type="radio" name="partyType" value="coalicion" <%= candidate.partyType === 'coalicion' ? 'checked' : '' %> onchange="cumbreTogglePartyMode()"> Coalición (varios partidos)
+      </label>
+
+      <div id="party-single-wrap">
+        <label>Elegir/corregir partido
+          <span style="display:flex; align-items:center; gap:8px;">
+            <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty(); cumbreUpdateSwatch();" style="flex:1;">
+              <% parties.forEach(function(p){ %>
+                <option value="<%= p.key %>" data-color="<%= p.color %>" <%= candidate.party === p.name ? 'selected' : '' %>><%= p.name %></option>
+              <% }); %>
+            </select>
+            <span id="party-single-swatch" class="party-swatch" style="width:22px;height:22px;"></span>
+          </span>
+        </label>
+        <p class="muted">Vuelve a elegir el partido correcto aquí si quedó mal asignado (revisa que el color de la muestra sea el que esperas).</p>
+      </div>
+
+      <div id="party-coalition-wrap" style="display:none;">
+        <p class="muted">Marca los partidos que forman la coalición:</p>
+        <div class="party-checkbox-grid">
+          <% parties.forEach(function(p){ %>
+            <% if (p.key !== 'otro') { %>
+              <label class="inline-check">
+                <input type="checkbox" name="partyKeys" value="<%= p.key %>">
+                <span class="party-swatch" style="background:<%= p.color %>;"></span>
+                <%= p.name %>
+              </label>
+            <% } %>
+          <% }); %>
+        </div>
+      </div>
+
+      <div id="party-manual-wrap" style="display:none;">
+        <label>Nombre del partido/candidatura (manual)
+          <input type="text" name="partyManual" placeholder="Ej. Partido local X">
+        </label>
+        <label>Color del partido (para la luz LED de la tarjeta)
+          <input type="color" name="colorManual" value="<%= (candidate.partyColors && candidate.partyColors[0]) || '#3EE6D0' %>">
+        </label>
+      </div>
+    </fieldset>
+
+    <label>Biografía <textarea name="bio" rows="3"><%= candidate.bio %></textarea></label>
+    <label>Distrito
+      <select name="district" required>
+        <% districts.forEach(function(d){ %>
+          <option value="<%= d._id %>" <%= candidate.district && candidate.district.toString() === d._id.toString() ? 'selected' : '' %>><%= d.name %></option>
+        <% }); %>
+      </select>
+    </label>
+    <button type="submit" class="btn btn-vote">Guardar cambios</button>
+    <a href="/admin" class="btn btn-ghost" style="text-decoration:none;text-align:center;">Cancelar</a>
+  </form>
+
+  <script>
+    function cumbreTogglePartyMode() {
+      const isCoalicion = document.querySelector('input[name="partyType"]:checked').value === 'coalicion';
+      document.getElementById('party-single-wrap').style.display = isCoalicion ? 'none' : '';
+      document.getElementById('party-coalition-wrap').style.display = isCoalicion ? '' : 'none';
+      cumbreToggleManualParty();
+    }
+    function cumbreToggleManualParty() {
+      const isCoalicion = document.querySelector('input[name="partyType"]:checked').value === 'coalicion';
+      const single = document.getElementById('party-single-select');
+      const isOtro = !isCoalicion && single.value === 'otro';
+      document.getElementById('party-manual-wrap').style.display = isOtro ? '' : 'none';
+    }
+    function cumbreUpdateSwatch() {
+      const single = document.getElementById('party-single-select');
+      const opt = single.options[single.selectedIndex];
+      const swatch = document.getElementById('party-single-swatch');
+      if (swatch && opt) swatch.style.background = opt.dataset.color || 'transparent';
+    }
+    cumbreTogglePartyMode();
+    cumbreUpdateSwatch();
+  </script>
+</section>

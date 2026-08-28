@@ -58,11 +58,14 @@
 
         <div id="party-single-wrap">
           <label>Partido
-            <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty()">
-              <% parties.forEach(function(p){ %>
-                <option value="<%= p.key %>" data-color="<%= p.color %>"><%= p.name %></option>
-              <% }); %>
-            </select>
+            <span style="display:flex; align-items:center; gap:8px;">
+              <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty(); cumbreUpdateSwatch();" style="flex:1;">
+                <% parties.forEach(function(p){ %>
+                  <option value="<%= p.key %>" data-color="<%= p.color %>"><%= p.name %></option>
+                <% }); %>
+              </select>
+              <span id="party-single-swatch" class="party-swatch" style="width:22px;height:22px;"></span>
+            </span>
           </label>
         </div>
 
@@ -115,6 +118,13 @@
         const isOtro = !isCoalicion && single.value === 'otro';
         document.getElementById('party-manual-wrap').style.display = isOtro ? '' : 'none';
       }
+      function cumbreUpdateSwatch() {
+        const single = document.getElementById('party-single-select');
+        const opt = single.options[single.selectedIndex];
+        const swatch = document.getElementById('party-single-swatch');
+        if (swatch && opt) swatch.style.background = opt.dataset.color || 'transparent';
+      }
+      cumbreUpdateSwatch();
     </script>
 
     <table class="admin-table">
@@ -131,7 +141,8 @@
             </td>
             <td><%= c.district ? c.district.name : '—' %></td>
             <td>
-              <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');">
+              <a href="/admin/candidato/<%= c._id %>/editar" class="btn btn-ghost small" style="color:var(--cyan); text-decoration:none; display:inline-block;">Editar</a>
+              <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');" style="display:inline;">
                 <button type="submit" class="btn btn-ghost small">Eliminar</button>
               </form>
             </td>
