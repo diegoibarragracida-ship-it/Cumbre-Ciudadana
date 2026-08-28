@@ -278,7 +278,7 @@ a { color: inherit; }
    Se aplica envolviendo la tarjeta en un div.party-glow. */
 .party-glow {
   position: relative; border-radius: 18px; padding: 6px; overflow: hidden; isolation: isolate;
-  box-shadow: 0 0 10px 0 var(--glow-primary, #3EE6D0), 0 0 22px 3px var(--glow-primary, #3EE6D0);
+  box-shadow: 0 0 6px 0 var(--glow-primary, #3EE6D0), 0 0 14px 1px var(--glow-primary, #3EE6D0);
 }
 .party-glow::before {
   content: '';
