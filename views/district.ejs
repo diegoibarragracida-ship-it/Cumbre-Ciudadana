@@ -1,6 +1,12 @@
 <p class="crumb"><a href="/">Inicio</a> / <span class="tag tag-<%= district.type %>"><%= district.type === 'federal' ? 'Federal' : 'Local' %></span></p>
 <h1 class="page-title"><%= district.name %></h1>
 
+<% if (error === 'auth_required') { %>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">
+    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+  </p>
+<% } %>
+
 <%
   // Arma el anillo LED como rebanadas SOLIDAS del color real del partido
   // (o de cada partido, si es coalicion), repartidas parejo en 360 grados.
@@ -15,7 +21,7 @@
 %>
 <section class="candidate-grid">
   <% candidates.forEach(function(c){ %>
-    <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(c.partyColors) %>;">
+    <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(c.partyColors) %>; --glow-primary: <%= (c.partyColors && c.partyColors[0]) || '#3EE6D0' %>;">
       <article class="candidate-card">
         <a href="/candidato/<%= c._id %>" class="candidate-photo-frame">
           <img src="<%= c.photoUrl %>" alt="Foto de <%= c.name %>" onerror="this.src='/img/default-avatar.svg'">
@@ -54,7 +60,7 @@
   <div class="results-head">
     <h2>Distribución de opinión</h2>
   </div>
-  <div id="results-pie-wrap" style="max-width:340px;margin:0 auto;">
+  <div id="results-pie-wrap" style="max-width:480px;margin:0 auto;">
     <canvas id="results-pie"></canvas>
   </div>
 </section>

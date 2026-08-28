@@ -31,7 +31,7 @@ router.get('/distrito/:id', async (req, res) => {
     if (v) myVote = v.candidate.toString();
   }
 
-  res.render('district', { title: district.name, district, candidates, myVote });
+  res.render('district', { title: district.name, district, candidates, myVote, error: req.query.error });
 });
 
 // Detalle de candidato: bio + comentarios
@@ -50,7 +50,7 @@ router.get('/candidato/:id', async (req, res) => {
     if (v) myVote = v.candidate.toString();
   }
 
-  res.render('candidate', { title: candidate.name, candidate, comments, myVote });
+  res.render('candidate', { title: candidate.name, candidate, comments, myVote, error: req.query.error });
 });
 
 // API: resultados en vivo para la grafica (Chart.js)

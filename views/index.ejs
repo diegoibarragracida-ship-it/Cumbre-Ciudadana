@@ -4,6 +4,12 @@
   <p class="hero-sub">Consulta de opinión sobre las candidaturas locales y federales de la región de las Altas Montañas de Veracruz. Entra con tu cuenta, elige tu distrito y emite tu voto de opinión.</p>
 </section>
 
+<% if (error === 'auth_required') { %>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">
+    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" arriba a la derecha.
+  </p>
+<% } %>
+
 <section class="ledger">
   <div class="ledger-col">
     <h2 class="ledger-title"><span class="tag tag-federal">Federal</span> Distritos federales</h2>
@@ -40,4 +46,48 @@
       <% }); %>
     </ol>
   </div>
+</section>
+
+<section class="landing-steps">
+  <p class="landing-eyebrow">Cómo funciona</p>
+  <div class="landing-steps-grid">
+    <div class="landing-step">
+      <span class="landing-step-num">1</span>
+      <h3>Inicia sesión con Google</h3>
+      <p>Solo necesitas tu cuenta de Google. Es gratis, toma segundos y nos ayuda a que cada persona vote una sola vez por distrito.</p>
+    </div>
+    <div class="landing-step">
+      <span class="landing-step-num">2</span>
+      <h3>Elige tu distrito</h3>
+      <p>Busca tu distrito federal o local en la lista de arriba y revisa el perfil de cada candidatura, con su partido o coalición.</p>
+    </div>
+    <div class="landing-step">
+      <span class="landing-step-num">3</span>
+      <h3>Vota y opina</h3>
+      <p>Emite tu voto de opinión, deja un comentario si quieres, y consulta los resultados en vivo, la gráfica y el historial de votos.</p>
+    </div>
+  </div>
+</section>
+
+<section class="contact-trust" style="border-top:1px solid var(--border); padding-top:32px;">
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">100%</span>
+    <span>Ejercicio ciudadano independiente, sin fines electorales oficiales</span>
+  </div>
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">1</span>
+    <span>Voto de opinión por persona y distrito, verificado por cuenta de Google</span>
+  </div>
+  <div class="contact-trust-item">
+    <span class="contact-trust-num">24/7</span>
+    <span>Resultados públicos y actualizados en vivo</span>
+  </div>
+</section>
+
+<section class="landing-cta">
+  <div>
+    <h2>¿Tienes dudas sobre la metodología o quieres reportar algo?</h2>
+    <p>Escríbenos por llamada, WhatsApp o el formulario de contacto.</p>
+  </div>
+  <a href="/contacto" class="btn btn-vote" style="width:auto;">Ir a Contacto</a>
 </section>

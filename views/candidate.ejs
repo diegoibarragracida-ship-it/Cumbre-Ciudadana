@@ -1,5 +1,11 @@
 <p class="crumb"><a href="/">Inicio</a> / <a href="/distrito/<%= candidate.district._id %>"><%= candidate.district.name %></a></p>
 
+<% if (error === 'auth_required') { %>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">
+    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+  </p>
+<% } %>
+
 <%
   function buildGlowSolid(colors) {
     const list = (colors && colors.length) ? colors : ['#3EE6D0'];
@@ -9,7 +15,7 @@
   }
 %>
 <section class="candidate-detail">
-  <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(candidate.partyColors) %>;">
+  <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(candidate.partyColors) %>; --glow-primary: <%= (candidate.partyColors && candidate.partyColors[0]) || '#3EE6D0' %>;">
     <div class="candidate-photo-frame large">
       <img src="<%= candidate.photoUrl %>" alt="Foto de <%= candidate.name %>" onerror="this.src='/img/default-avatar.svg'">
       <span class="stamp" aria-hidden="true">Perfil</span>
