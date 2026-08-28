@@ -1,27 +1,57 @@
 <p class="crumb"><a href="/">Inicio</a> / <span class="tag tag-<%= district.type %>"><%= district.type === 'federal' ? 'Federal' : 'Local' %></span></p>
 <h1 class="page-title"><%= district.name %></h1>
 
-<% if (error === 'auth_required') { %>
-  <p class="contact-alert contact-alert-err" style="max-width:520px;">
-    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
-  </p>
-<% } %>
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Resultados en vivo</h2>
+    <span class="live-dot">● en vivo</span>
+  </div>
+  <div id="results-chart" class="bulletin-bars">
+    <p class="empty">Cargando resultados…</p>
+  </div>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Distribución de opinión</h2>
+  </div>
+  <div id="results-pie-wrap" style="max-width:340px;margin:0 auto;">
+    <canvas id="results-pie"></canvas>
+  </div>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Historial de votos</h2>
+  </div>
+  <ul id="vote-history" class="comment-list">
+    <li class="empty">Cargando historial…</li>
+  </ul>
+</section>
 
 <%
-  // Arma el anillo LED como rebanadas SOLIDAS del color real del partido
-  // (o de cada partido, si es coalicion), repartidas parejo en 360 grados.
-  // Asi el color que se ve siempre es el color de verdad del partido,
-  // no un destello parcial que puede percibirse distinto.
-  function buildGlowSolid(colors) {
+  // Arma los "tramos de luz" del anillo LED: un tramo brillante por cada
+  // color del partido (o de cada partido, si es coalicion), repartidos
+  // parejo alrededor de las 360 grados.
+  function buildGlowStops(colors) {
     const list = (colors && colors.length) ? colors : ['#3EE6D0'];
     const n = list.length;
     const arc = 360 / n;
-    return list.map((c, i) => `${c} ${(i * arc).toFixed(1)}deg ${((i + 1) * arc).toFixed(1)}deg`).join(', ');
+    const bright = Math.min(22, arc * 0.4);
+    const stops = [];
+    list.forEach((c, i) => {
+      const start = i * arc;
+      stops.push(`transparent ${start}deg`);
+      stops.push(`${c} ${(start + bright / 2).toFixed(1)}deg`);
+      stops.push(`transparent ${(start + bright).toFixed(1)}deg`);
+    });
+    stops.push('transparent 360deg');
+    return stops.join(', ');
   }
 %>
 <section class="candidate-grid">
   <% candidates.forEach(function(c){ %>
-    <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(c.partyColors) %>; --glow-primary: <%= (c.partyColors && c.partyColors[0]) || '#3EE6D0' %>;">
+    <div class="party-glow" style="--glow-stops: <%= buildGlowStops(c.partyColors) %>;">
       <article class="candidate-card">
         <a href="/candidato/<%= c._id %>" class="candidate-photo-frame">
           <img src="<%= c.photoUrl %>" alt="Foto de <%= c.name %>" onerror="this.src='/img/default-avatar.svg'">
@@ -44,34 +74,6 @@
   <% if (candidates.length === 0) { %>
     <p class="empty">Aún no hay candidatos registrados para este distrito.</p>
   <% } %>
-</section>
-
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Resultados en vivo</h2>
-    <span class="live-dot">● en vivo</span>
-  </div>
-  <div id="results-chart" class="bulletin-bars">
-    <p class="empty">Cargando resultados…</p>
-  </div>
-</section>
-
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Distribución de opinión</h2>
-  </div>
-  <div id="results-pie-wrap" style="max-width:480px;margin:0 auto;">
-    <canvas id="results-pie"></canvas>
-  </div>
-</section>
-
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Historial de votos</h2>
-  </div>
-  <ul id="vote-history" class="comment-list">
-    <li class="empty">Cargando historial…</li>
-  </ul>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>

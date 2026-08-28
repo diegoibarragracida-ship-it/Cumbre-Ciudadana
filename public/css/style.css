@@ -135,30 +135,6 @@ a { color: inherit; }
 
 /* ===== Hero ===== */
 .hero { padding: 48px 0 8px; max-width: 760px; position: relative; }
-.hero-lg { max-width: 100%; padding-bottom: 24px; }
-.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 24px 0 32px; }
-.hero-stats { display: flex; flex-wrap: wrap; gap: 28px 40px; padding-top: 20px; border-top: 1px solid var(--border); max-width: 760px; }
-.hero-stat { display: flex; flex-direction: column; gap: 2px; }
-.hero-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--cyan); line-height: 1; }
-.hero-stat-label { font-size: 0.78rem; color: var(--text-faint); }
-
-/* ===== Grafica de lineas decorativa del hero: puntos conectados que
-   suben y bajan, corriendo continuamente como si fuera "en vivo". El
-   SVG es mas ancho que su contenedor (overflow hidden) y se desplaza
-   con CSS; el patron de puntos se repite cada 300px, asi que al mover
-   exactamente ese ancho la vuelta es perfectamente continua. */
-.hero-chart-decoration { width: 100%; max-width: 760px; height: 90px; overflow: hidden; margin: 22px 0 4px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.hero-chart-svg { display: block; animation: hero-chart-scroll 12s linear infinite; }
-@keyframes hero-chart-scroll { from { transform: translateX(0); } to { transform: translateX(-600px); } }
-.hero-chart-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.hero-chart-line-a { stroke: var(--cyan); stroke-width: 2.5; opacity: 0.85; }
-.hero-chart-line-b { stroke: var(--amber); stroke-width: 2; opacity: 0.4; }
-.hero-chart-dot { fill: var(--cyan); animation: hero-chart-pulse 2.4s ease-in-out infinite; }
-@keyframes hero-chart-pulse { 0%,100% { r: 3.5; opacity: 1; } 50% { r: 5; opacity: 0.5; } }
-@media (prefers-reduced-motion: reduce) {
-  .hero-chart-svg { animation: none; }
-  .hero-chart-dot { animation: none; }
-}
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.74rem;
@@ -290,41 +266,29 @@ a { color: inherit; }
 }
 .candidate-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
 
-/* ===== Luz LED del partido =====
-   Antes solo se veia un destello pequeño y borroso girando, y con el
-   halo blanco encima el color se percibia distinto al real (un naranja
-   se veia rosado, etc). Ahora el anillo pegado al borde de la tarjeta
-   muestra SIEMPRE el color completo y real del partido (o un color por
-   cada partido, si es coalicion, repartido como rebanadas de pastel).
-   Encima, solo un brillo blanco gira para dar el efecto de "luz viva",
-   sin cambiar el tono de fondo.
-   --glow-solid: rebanadas solidas del/los color(es) real(es) del partido.
-   Se aplica envolviendo la tarjeta en un div.party-glow. */
-.party-glow {
-  position: relative; border-radius: 18px; padding: 6px; overflow: hidden; isolation: isolate;
-  box-shadow: 0 0 6px 0 var(--glow-primary, #3EE6D0), 0 0 14px 1px var(--glow-primary, #3EE6D0);
-}
+/* ===== Luz LED del partido: una luz nitida que viaja pegada al borde
+   exacto de la tarjeta (no un resplandor difuso detras). Se logra con
+   un anillo delgado (padding) que deja ver, solo en esa franja, una capa
+   giratoria de conic-gradient. El contenido de la tarjeta (con su propio
+   fondo solido) tapa todo el centro, asi la luz solo se ve en el borde.
+   Se aplica envolviendo la tarjeta en un div.party-glow. El color (o
+   colores, si es coalicion) se pasa por la variable --glow-stops, ya
+   armada como lista de "color grados" lista para conic-gradient. */
+.party-glow { position: relative; border-radius: 18px; padding: 5px; overflow: hidden; isolation: isolate; }
 .party-glow::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: conic-gradient(var(--glow-solid, #3EE6D0 0deg 360deg));
-  z-index: 0;
-}
-.party-glow::after {
   content: '';
   position: absolute;
   top: 50%; left: 50%;
   width: 300%; height: 300%;
   transform: translate(-50%, -50%) rotate(0deg);
-  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,1) 12deg, transparent 34deg, transparent 360deg);
-  mix-blend-mode: overlay;
-  animation: party-spin 11s linear infinite;
-  z-index: 1;
+  background: conic-gradient(from 0deg, var(--glow-stops, transparent 0deg, #3EE6D0 4deg, transparent 24deg, transparent 360deg));
+  filter: drop-shadow(0 0 3px rgba(255,255,255,0.5));
+  animation: party-spin 6.5s linear infinite;
+  z-index: 0;
 }
-.party-glow > * { position: relative; z-index: 2; }
+.party-glow > * { position: relative; z-index: 1; }
 @keyframes party-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .party-glow::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .party-glow::before { animation: none; } }
 
 .candidate-photo-frame { position: relative; display: block; aspect-ratio: 4/5; background: var(--bg-alt); }
 .candidate-photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(1.05); }
@@ -399,119 +363,6 @@ a { color: inherit; }
 .site-footer { border-top: 1px solid var(--border); padding: 24px 0; margin-top: 40px; font-size: 0.78rem; color: var(--text-faint); }
 .site-footer a { color: var(--text-dim); }
 .site-footer a:hover { color: var(--cyan); }
-
-/* ===== Contacto ===== */
-.contact-hero { padding: 40px 0 8px; max-width: 680px; }
-
-.contact-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin: 28px 0; }
-.contact-card {
-  position: relative;
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-  padding: 22px;
-}
-.contact-card-featured {
-  border-color: rgba(62,230,208,0.35);
-  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
-  box-shadow: 0 0 0 1px rgba(62,230,208,0.08), 0 16px 40px rgba(0,0,0,0.28);
-}
-.contact-card-tag {
-  display: inline-block; font-family: var(--font-mono); font-size: 0.66rem;
-  text-transform: uppercase; letter-spacing: 0.08em; color: var(--cyan);
-  background: var(--cyan-dim); border: 1px solid rgba(62,230,208,0.3);
-  padding: 3px 10px; border-radius: 999px; margin-bottom: 12px;
-}
-.contact-card h2 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; color: var(--text); }
-.contact-number { font-family: var(--font-mono); font-size: 1.5rem; font-weight: 600; color: var(--text); margin: 0 0 16px; letter-spacing: 0.02em; }
-.contact-actions { display: flex; flex-wrap: wrap; gap: 10px; }
-
-.contact-form-wrap {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
-  padding: 24px; max-width: 640px; margin-bottom: 32px;
-}
-.contact-form-title { margin: 0 0 16px; font-family: var(--font-display); font-weight: 600; font-size: 1.1rem; color: var(--text); }
-.contact-form { display: flex; flex-direction: column; gap: 12px; }
-.contact-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 560px) { .contact-form-row { grid-template-columns: 1fr; } }
-.contact-form label { font-size: 0.8rem; color: var(--text-dim); display: flex; flex-direction: column; gap: 4px; }
-.contact-form input, .contact-form select, .contact-form textarea {
-  background: var(--bg-alt); border: 1px solid var(--border-strong); border-radius: 8px;
-  padding: 9px 10px; color: var(--text); font-family: var(--font-body); font-size: 0.88rem;
-}
-.contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus { outline: none; border-color: var(--cyan); }
-
-.contact-alert { padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 14px; }
-.contact-alert-ok { background: rgba(62,230,208,0.12); border: 1px solid rgba(62,230,208,0.35); color: var(--cyan); }
-.contact-alert-err { background: rgba(255,93,108,0.12); border: 1px solid rgba(255,93,108,0.35); color: var(--red); }
-
-.contact-trust { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; padding-bottom: 56px; }
-.contact-trust-item {
-  display: flex; flex-direction: column; gap: 4px;
-  border-top: 1px solid var(--border); padding-top: 12px;
-  font-size: 0.8rem; color: var(--text-dim);
-}
-.contact-trust-num { font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; color: var(--cyan); }
-
-/* ===== Landing (index) ===== */
-.landing-eyebrow {
-  font-family: var(--font-mono); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em;
-  color: var(--cyan); margin: 0 0 14px;
-}
-.landing-steps { padding: 8px 0 40px; }
-.landing-steps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
-.landing-step {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 20px;
-  display: flex; flex-direction: column; gap: 6px;
-}
-.landing-step-num {
-  width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  background: var(--cyan-dim); color: var(--cyan); font-family: var(--font-display); font-weight: 600;
-  border: 1px solid rgba(62,230,208,0.35); margin-bottom: 6px;
-}
-.landing-step h3 { margin: 0; font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--text); }
-.landing-step p { margin: 0; font-size: 0.85rem; color: var(--text-dim); line-height: 1.5; }
-
-.landing-cta {
-  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 16px;
-  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
-  border: 1px solid rgba(62,230,208,0.3); border-radius: 18px; padding: 26px 28px; margin: 8px 0 56px;
-}
-.landing-cta h2 { margin: 0 0 4px; font-family: var(--font-display); font-weight: 600; font-size: 1.15rem; color: var(--text); }
-.landing-cta p { margin: 0; color: var(--text-dim); font-size: 0.88rem; }
-
-.landing-services {
-  display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; align-items: center;
-  background: linear-gradient(160deg, var(--surface) 0%, var(--surface-2) 100%);
-  border: 1px solid rgba(62,230,208,0.3); border-radius: 18px; padding: 30px 32px; margin: 8px 0 56px;
-}
-@media (max-width: 720px) { .landing-services { grid-template-columns: 1fr; } }
-.landing-services-text h2 { margin: 0 0 10px; font-family: var(--font-display); font-weight: 600; font-size: 1.3rem; color: var(--text); line-height: 1.3; }
-.landing-services-text p { margin: 0 0 18px; color: var(--text-dim); font-size: 0.92rem; line-height: 1.55; max-width: 52ch; }
-.landing-services-actions { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.landing-services-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
-.landing-services-list li {
-  font-size: 0.86rem; color: var(--text); padding-left: 26px; position: relative;
-}
-.landing-services-list li::before {
-  content: '✓'; position: absolute; left: 0; top: 0;
-  color: var(--cyan); font-weight: 700;
-}
-
-.landing-section-head { max-width: 640px; padding: 48px 0 8px; }
-.landing-section-head h2 { margin: 0 0 10px; font-family: var(--font-display); font-weight: 600; font-size: 1.6rem; color: var(--text); line-height: 1.25; }
-.landing-section-sub { margin: 0; color: var(--text-dim); font-size: 0.95rem; line-height: 1.55; }
-
-.services-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; padding: 24px 0 48px; }
-.service-card {
-  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 22px;
-  transition: border-color 0.15s ease, transform 0.15s ease;
-}
-.service-card:hover { border-color: rgba(62,230,208,0.4); transform: translateY(-2px); }
-.service-icon {
-  width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center;
-  background: var(--cyan-dim); font-size: 1.3rem; margin-bottom: 14px;
-}
-.service-card h3 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 600; font-size: 1rem; color: var(--text); }
-.service-card p { margin: 0; font-size: 0.85rem; color: var(--text-dim); line-height: 1.55; }
 
 @media (prefers-reduced-motion: reduce) {
   .eyebrow::before, .live-dot::before { animation: none; }

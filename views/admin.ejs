@@ -58,14 +58,11 @@
 
         <div id="party-single-wrap">
           <label>Partido
-            <span style="display:flex; align-items:center; gap:8px;">
-              <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty(); cumbreUpdateSwatch();" style="flex:1;">
-                <% parties.forEach(function(p){ %>
-                  <option value="<%= p.key %>" data-color="<%= p.color %>"><%= p.name %></option>
-                <% }); %>
-              </select>
-              <span id="party-single-swatch" class="party-swatch" style="width:22px;height:22px;"></span>
-            </span>
+            <select name="partyKeys" id="party-single-select" onchange="cumbreToggleManualParty()">
+              <% parties.forEach(function(p){ %>
+                <option value="<%= p.key %>" data-color="<%= p.color %>"><%= p.name %></option>
+              <% }); %>
+            </select>
           </label>
         </div>
 
@@ -118,13 +115,6 @@
         const isOtro = !isCoalicion && single.value === 'otro';
         document.getElementById('party-manual-wrap').style.display = isOtro ? '' : 'none';
       }
-      function cumbreUpdateSwatch() {
-        const single = document.getElementById('party-single-select');
-        const opt = single.options[single.selectedIndex];
-        const swatch = document.getElementById('party-single-swatch');
-        if (swatch && opt) swatch.style.background = opt.dataset.color || 'transparent';
-      }
-      cumbreUpdateSwatch();
     </script>
 
     <table class="admin-table">
@@ -141,43 +131,12 @@
             </td>
             <td><%= c.district ? c.district.name : '—' %></td>
             <td>
-              <a href="/admin/candidato/<%= c._id %>/editar" class="btn btn-ghost small" style="color:var(--cyan); text-decoration:none; display:inline-block;">Editar</a>
-              <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');" style="display:inline;">
+              <form action="/admin/candidato/<%= c._id %>/eliminar" method="POST" onsubmit="return confirm('¿Eliminar este candidato?');">
                 <button type="submit" class="btn btn-ghost small">Eliminar</button>
               </form>
             </td>
           </tr>
         <% }); %>
-      </tbody>
-    </table>
-  </div>
-
-  <div class="admin-block">
-    <h2>Mensajes de contacto</h2>
-    <table class="admin-table">
-      <thead><tr><th>De</th><th>Asunto</th><th>Mensaje</th><th>Estado</th><th></th></tr></thead>
-      <tbody>
-        <% (typeof messages !== 'undefined' ? messages : []).forEach(function(m){ %>
-          <tr>
-            <td>
-              <%= m.name %>
-              <div class="muted"><%= m.phone || m.email || '' %></div>
-            </td>
-            <td><%= m.subject %></td>
-            <td style="max-width:280px;"><%= m.message %></td>
-            <td><%= m.status === 'atendido' ? '✓ Atendido' : 'Nuevo' %></td>
-            <td>
-              <% if (m.status !== 'atendido') { %>
-                <form action="/admin/mensaje/<%= m._id %>/atender" method="POST">
-                  <button type="submit" class="btn btn-ghost small" style="color:var(--cyan);">Marcar atendido</button>
-                </form>
-              <% } %>
-            </td>
-          </tr>
-        <% }); %>
-        <% if (typeof messages === 'undefined' || messages.length === 0) { %>
-          <tr><td colspan="5" class="muted">Aún no hay mensajes.</td></tr>
-        <% } %>
       </tbody>
     </table>
   </div>

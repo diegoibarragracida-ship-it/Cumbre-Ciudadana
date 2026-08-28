@@ -35,32 +35,6 @@ const TOTAL_VOTES = totalArg ? parseInt(totalArg, 10) : 100;
 const districtArg = process.argv.find(a => a.startsWith('--district='));
 const DISTRICT_ID = districtArg ? districtArg.split('=')[1] : null;
 
-// Nombres realistas para los votantes de prueba, para que el historial
-// se vea con nombres normales en vez de "Votante de prueba N".
-const NOMBRES = [
-  'María', 'José', 'Guadalupe', 'Juan', 'Ana', 'Luis', 'Rosa', 'Carlos',
-  'Verónica', 'Miguel', 'Alejandra', 'Francisco', 'Laura', 'Jorge', 'Karla',
-  'Antonio', 'Fernanda', 'Ricardo', 'Daniela', 'Manuel', 'Patricia', 'Jesús',
-  'Claudia', 'Roberto', 'Gabriela', 'Alejandro', 'Mónica', 'Eduardo', 'Sofía',
-  'Raúl', 'Leticia', 'Sergio', 'Adriana', 'Pedro', 'Elena', 'Arturo', 'Cecilia',
-  'Emilio', 'Itzel', 'Hugo', 'Yesenia', 'Rubén', 'Diana', 'Salvador', 'Paola',
-  'Ignacio', 'Beatriz', 'Israel', 'Xóchitl', 'Álvaro', 'Nayeli'
-];
-const APELLIDOS = [
-  'Hernández', 'García', 'Martínez', 'López', 'González', 'Pérez', 'Sánchez',
-  'Ramírez', 'Cruz', 'Flores', 'Gómez', 'Díaz', 'Reyes', 'Morales', 'Jiménez',
-  'Torres', 'Vázquez', 'Ortiz', 'Ruiz', 'Rojas', 'Mendoza', 'Aguilar',
-  'Domínguez', 'Castillo', 'Herrera', 'Vargas', 'Romero', 'Medina', 'Guzmán',
-  'Cortés', 'Salazar', 'Ríos', 'Contreras', 'Delgado', 'Luna', 'Ramos'
-];
-
-function randomName() {
-  const n = NOMBRES[Math.floor(Math.random() * NOMBRES.length)];
-  const a1 = APELLIDOS[Math.floor(Math.random() * APELLIDOS.length)];
-  const a2 = APELLIDOS[Math.floor(Math.random() * APELLIDOS.length)];
-  return `${n} ${a1} ${a2}`;
-}
-
 async function clean() {
   const fakeUsers = await User.find({ googleId: { $regex: `^${FAKE_PREFIX}` } });
   const fakeIds = fakeUsers.map(u => u._id);
@@ -132,8 +106,8 @@ async function run() {
         voteCounter++;
         const fakeUser = await User.create({
           googleId: `${FAKE_PREFIX}${stamp}-${voteCounter}`,
-          name: randomName(),
-          email: `${FAKE_PREFIX}${stamp}-${voteCounter}@cumbre-ciudadana.local`,
+          name: `Votante de prueba ${voteCounter}`,
+          email: `${FAKE_PREFIX}${stamp}-${voteCounter}@ejemplo.local`,
           photo: '',
           provider: 'google'
         });

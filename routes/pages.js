@@ -15,12 +15,7 @@ router.get('/', async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
   const local = districts.filter(d => d.type === 'local');
   const federal = districts.filter(d => d.type === 'federal');
-  const totalVotes = await Vote.countDocuments();
-  const totalCandidates = await Candidate.countDocuments();
-  res.render('index', {
-    title: 'Inicio', local, federal, error: req.query.error,
-    totalVotes, totalCandidates, totalDistricts: districts.length
-  });
+  res.render('index', { title: 'Inicio', local, federal, error: req.query.error });
 });
 
 // Detalle de distrito: candidatos + grafica
@@ -36,7 +31,7 @@ router.get('/distrito/:id', async (req, res) => {
     if (v) myVote = v.candidate.toString();
   }
 
-  res.render('district', { title: district.name, district, candidates, myVote, error: req.query.error });
+  res.render('district', { title: district.name, district, candidates, myVote });
 });
 
 // Detalle de candidato: bio + comentarios
@@ -55,7 +50,7 @@ router.get('/candidato/:id', async (req, res) => {
     if (v) myVote = v.candidate.toString();
   }
 
-  res.render('candidate', { title: candidate.name, candidate, comments, myVote, error: req.query.error });
+  res.render('candidate', { title: candidate.name, candidate, comments, myVote });
 });
 
 // API: resultados en vivo para la grafica (Chart.js)
