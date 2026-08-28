@@ -266,29 +266,38 @@ a { color: inherit; }
 }
 .candidate-card:hover { border-color: var(--cyan); transform: translateY(-2px); }
 
-/* ===== Luz LED del partido: una luz nitida que viaja pegada al borde
-   exacto de la tarjeta (no un resplandor difuso detras). Se logra con
-   un anillo delgado (padding) que deja ver, solo en esa franja, una capa
-   giratoria de conic-gradient. El contenido de la tarjeta (con su propio
-   fondo solido) tapa todo el centro, asi la luz solo se ve en el borde.
-   Se aplica envolviendo la tarjeta en un div.party-glow. El color (o
-   colores, si es coalicion) se pasa por la variable --glow-stops, ya
-   armada como lista de "color grados" lista para conic-gradient. */
-.party-glow { position: relative; border-radius: 18px; padding: 5px; overflow: hidden; isolation: isolate; }
+/* ===== Luz LED del partido =====
+   Antes solo se veia un destello pequeño y borroso girando, y con el
+   halo blanco encima el color se percibia distinto al real (un naranja
+   se veia rosado, etc). Ahora el anillo pegado al borde de la tarjeta
+   muestra SIEMPRE el color completo y real del partido (o un color por
+   cada partido, si es coalicion, repartido como rebanadas de pastel).
+   Encima, solo un brillo blanco gira para dar el efecto de "luz viva",
+   sin cambiar el tono de fondo.
+   --glow-solid: rebanadas solidas del/los color(es) real(es) del partido.
+   Se aplica envolviendo la tarjeta en un div.party-glow. */
+.party-glow { position: relative; border-radius: 18px; padding: 8px; overflow: hidden; isolation: isolate; }
 .party-glow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(var(--glow-solid, #3EE6D0 0deg 360deg));
+  z-index: 0;
+}
+.party-glow::after {
   content: '';
   position: absolute;
   top: 50%; left: 50%;
   width: 300%; height: 300%;
   transform: translate(-50%, -50%) rotate(0deg);
-  background: conic-gradient(from 0deg, var(--glow-stops, transparent 0deg, #3EE6D0 4deg, transparent 24deg, transparent 360deg));
-  filter: drop-shadow(0 0 3px rgba(255,255,255,0.5));
-  animation: party-spin 6.5s linear infinite;
-  z-index: 0;
+  background: conic-gradient(from 0deg, transparent 0deg, rgba(255,255,255,0.85) 10deg, transparent 26deg, transparent 360deg);
+  mix-blend-mode: overlay;
+  animation: party-spin 11s linear infinite;
+  z-index: 1;
 }
-.party-glow > * { position: relative; z-index: 1; }
+.party-glow > * { position: relative; z-index: 2; }
 @keyframes party-spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .party-glow::before { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .party-glow::after { animation: none; } }
 
 .candidate-photo-frame { position: relative; display: block; aspect-ratio: 4/5; background: var(--bg-alt); }
 .candidate-photo-frame img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(1.05); }
