@@ -1,24 +1,21 @@
 <p class="crumb"><a href="/">Inicio</a> / <a href="/distrito/<%= candidate.district._id %>"><%= candidate.district.name %></a></p>
 
+<% if (error === 'auth_required') { %>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">
+    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+  </p>
+<% } %>
+
 <%
-  function buildGlowStops(colors) {
+  function buildGlowSolid(colors) {
     const list = (colors && colors.length) ? colors : ['#3EE6D0'];
     const n = list.length;
     const arc = 360 / n;
-    const bright = Math.min(14, arc * 0.35);
-    const stops = [];
-    list.forEach((c, i) => {
-      const start = i * arc;
-      stops.push(`transparent ${start}deg`);
-      stops.push(`${c} ${(start + bright / 2).toFixed(1)}deg`);
-      stops.push(`transparent ${(start + bright).toFixed(1)}deg`);
-    });
-    stops.push('transparent 360deg');
-    return stops.join(', ');
+    return list.map((c, i) => `${c} ${(i * arc).toFixed(1)}deg ${((i + 1) * arc).toFixed(1)}deg`).join(', ');
   }
 %>
 <section class="candidate-detail">
-  <div class="party-glow" style="--glow-stops: <%= buildGlowStops(candidate.partyColors) %>;">
+  <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(candidate.partyColors) %>; --glow-primary: <%= (candidate.partyColors && candidate.partyColors[0]) || '#3EE6D0' %>;">
     <div class="candidate-photo-frame large">
       <img src="<%= candidate.photoUrl %>" alt="Foto de <%= candidate.name %>" onerror="this.src='/img/default-avatar.svg'">
       <span class="stamp" aria-hidden="true">Perfil</span>

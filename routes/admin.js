@@ -4,6 +4,7 @@ const multer = require('multer');
 const { ensureAuth, ensureAdmin } = require('./middleware');
 const District = require('../models/District');
 const Candidate = require('../models/Candidate');
+const ContactMessage = require('../models/ContactMessage');
 const PARTIES = require('../config/parties');
 
 // Guardamos la imagen en memoria y la convertimos a base64 para meterla
@@ -18,13 +19,40 @@ const upload = multer({
   }
 });
 
+// Resuelve partido/coalicion + colores a partir del body del formulario.
+// Se usa tanto para crear como para editar candidatos.
+function resolveParty(body) {
+  let partyKeys = body.partyKeys || [];
+  if (!Array.isArray(partyKeys)) partyKeys = [partyKeys];
+  partyKeys = partyKeys.filter(Boolean);
+
+  let partyLabel, partyColors;
+
+  if (partyKeys.length && partyKeys[0] !== 'otro') {
+    const matched = partyKeys.map(k => PARTIES.find(p => p.key === k)).filter(Boolean);
+    if (matched.length) {
+      partyLabel = matched.map(p => p.name).join(' - ');
+      partyColors = matched.map(p => p.color);
+    }
+  }
+
+  // "Otro", nada seleccionado, o clave invalida: usar el texto/color manual
+  if (!partyLabel) {
+    partyLabel = (body.partyManual || '').trim() || 'Independiente';
+    partyColors = [(body.colorManual || '#3EE6D0').trim()];
+  }
+
+  return { partyLabel, partyColors };
+}
+
 router.use(ensureAuth, ensureAdmin);
 
 // Panel principal
 router.get('/', async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
   const candidates = await Candidate.find().populate('district');
-  res.render('admin', { title: 'Panel de administracion', districts, candidates, parties: PARTIES });
+  const messages = await ContactMessage.find().sort({ createdAt: -1 }).limit(50);
+  res.render('admin', { title: 'Panel de administracion', districts, candidates, parties: PARTIES, messages });
 });
 
 // Crear distrito
@@ -44,25 +72,7 @@ router.post('/distrito/:id/eliminar', async (req, res) => {
 router.post('/candidato', upload.single('photo'), async (req, res) => {
   try {
     const { name, bio, district, partyType } = req.body;
-
-    // partyKeys llega como string (un solo partido) o array (coalicion con checkboxes)
-    let partyKeys = req.body.partyKeys || [];
-    if (!Array.isArray(partyKeys)) partyKeys = [partyKeys];
-    partyKeys = partyKeys.filter(Boolean);
-
-    let partyLabel, partyColors;
-
-    if (partyKeys.length && partyKeys[0] !== 'otro') {
-      const matched = partyKeys.map(k => PARTIES.find(p => p.key === k)).filter(Boolean);
-      partyLabel = matched.map(p => p.name).join(' - ');
-      partyColors = matched.map(p => p.color);
-    }
-
-    // "Otro" o si no se selecciono nada valido: usar el texto/color manual
-    if (!partyLabel) {
-      partyLabel = (req.body.partyManual || '').trim() || 'Independiente';
-      partyColors = [(req.body.colorManual || '#3EE6D0').trim()];
-    }
+    const { partyLabel, partyColors } = resolveParty(req.body);
 
     // Foto: si subieron archivo, se guarda como base64; si no, se usa la URL escrita
     let photoUrl = (req.body.photoUrl || '').trim() || undefined;
@@ -87,9 +97,53 @@ router.post('/candidato', upload.single('photo'), async (req, res) => {
   }
 });
 
+// Formulario para editar un candidato existente (corregir partido, color, foto, etc.)
+router.get('/candidato/:id/editar', async (req, res) => {
+  const candidate = await Candidate.findById(req.params.id);
+  if (!candidate) return res.status(404).send('Candidato no encontrado');
+  const districts = await District.find().sort({ type: 1, number: 1 });
+  res.render('edit-candidate', { title: 'Editar candidato', candidate, districts, parties: PARTIES });
+});
+
+// Guardar edicion de candidato
+router.post('/candidato/:id/editar', upload.single('photo'), async (req, res) => {
+  try {
+    const { name, bio, district, partyType } = req.body;
+    const { partyLabel, partyColors } = resolveParty(req.body);
+
+    const update = {
+      name,
+      party: partyLabel,
+      partyType: partyType === 'coalicion' ? 'coalicion' : 'partido',
+      partyColors,
+      bio,
+      district
+    };
+
+    if (req.file) {
+      update.photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    } else if ((req.body.photoUrl || '').trim()) {
+      update.photoUrl = req.body.photoUrl.trim();
+    }
+    // Si no subio archivo ni escribio URL, se conserva la foto que ya tenia.
+
+    await Candidate.findByIdAndUpdate(req.params.id, update);
+    res.redirect('/admin');
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error al editar candidato: ' + err.message);
+  }
+});
+
 // Eliminar candidato
 router.post('/candidato/:id/eliminar', async (req, res) => {
   await Candidate.findByIdAndDelete(req.params.id);
+  res.redirect('/admin');
+});
+
+// Marcar mensaje de contacto como atendido
+router.post('/mensaje/:id/atender', async (req, res) => {
+  await ContactMessage.findByIdAndUpdate(req.params.id, { status: 'atendido' });
   res.redirect('/admin');
 });
 

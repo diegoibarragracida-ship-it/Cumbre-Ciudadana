@@ -1,57 +1,27 @@
 <p class="crumb"><a href="/">Inicio</a> / <span class="tag tag-<%= district.type %>"><%= district.type === 'federal' ? 'Federal' : 'Local' %></span></p>
 <h1 class="page-title"><%= district.name %></h1>
 
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Resultados en vivo</h2>
-    <span class="live-dot">● en vivo</span>
-  </div>
-  <div id="results-chart" class="bulletin-bars">
-    <p class="empty">Cargando resultados…</p>
-  </div>
-</section>
-
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Distribución de opinión</h2>
-  </div>
-  <div id="results-pie-wrap" style="max-width:340px;margin:0 auto;">
-    <canvas id="results-pie"></canvas>
-  </div>
-</section>
-
-<section class="results-panel">
-  <div class="results-head">
-    <h2>Historial de votos</h2>
-  </div>
-  <ul id="vote-history" class="comment-list">
-    <li class="empty">Cargando historial…</li>
-  </ul>
-</section>
+<% if (error === 'auth_required') { %>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">
+    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+  </p>
+<% } %>
 
 <%
-  // Arma los "tramos de luz" del anillo LED: un tramo brillante por cada
-  // color del partido (o de cada partido, si es coalicion), repartidos
-  // parejo alrededor de las 360 grados.
-  function buildGlowStops(colors) {
+  // Arma el anillo LED como rebanadas SOLIDAS del color real del partido
+  // (o de cada partido, si es coalicion), repartidas parejo en 360 grados.
+  // Asi el color que se ve siempre es el color de verdad del partido,
+  // no un destello parcial que puede percibirse distinto.
+  function buildGlowSolid(colors) {
     const list = (colors && colors.length) ? colors : ['#3EE6D0'];
     const n = list.length;
     const arc = 360 / n;
-    const bright = Math.min(22, arc * 0.4);
-    const stops = [];
-    list.forEach((c, i) => {
-      const start = i * arc;
-      stops.push(`transparent ${start}deg`);
-      stops.push(`${c} ${(start + bright / 2).toFixed(1)}deg`);
-      stops.push(`transparent ${(start + bright).toFixed(1)}deg`);
-    });
-    stops.push('transparent 360deg');
-    return stops.join(', ');
+    return list.map((c, i) => `${c} ${(i * arc).toFixed(1)}deg ${((i + 1) * arc).toFixed(1)}deg`).join(', ');
   }
 %>
 <section class="candidate-grid">
   <% candidates.forEach(function(c){ %>
-    <div class="party-glow" style="--glow-stops: <%= buildGlowStops(c.partyColors) %>;">
+    <div class="party-glow" style="--glow-solid: <%= buildGlowSolid(c.partyColors) %>; --glow-primary: <%= (c.partyColors && c.partyColors[0]) || '#3EE6D0' %>;">
       <article class="candidate-card">
         <a href="/candidato/<%= c._id %>" class="candidate-photo-frame">
           <img src="<%= c.photoUrl %>" alt="Foto de <%= c.name %>" onerror="this.src='/img/default-avatar.svg'">
@@ -60,6 +30,9 @@
         <div class="candidate-info">
           <h3><a href="/candidato/<%= c._id %>"><%= c.name %></a></h3>
           <p class="party"><%= c.party %></p>
+          <% if (c.isCitizenAdded) { %>
+            <p class="tag tag-citizen">Agregado por un ciudadano</p>
+          <% } %>
           <% if (myVote === c._id.toString()) { %>
             <p class="voted-flag">✓ Tu voto actual</p>
           <% } else { %>
@@ -74,6 +47,88 @@
   <% if (candidates.length === 0) { %>
     <p class="empty">Aún no hay candidatos registrados para este distrito.</p>
   <% } %>
+</section>
+
+<section class="results-panel suggest-panel">
+  <details>
+    <summary>¿No encuentras a tu candidato? Agrégalo aquí</summary>
+    <p class="muted" style="margin-top:10px;">
+      Escribe su nombre, elige su partido (o márcalo como independiente) y sube
+      una foto si quieres — es opcional. Tu voto quedará registrado en automático
+      para el candidato que agregues. Solo el administrador puede editarlo o
+      eliminarlo después.
+    </p>
+
+    <% if (error === 'nombre_requerido') { %>
+      <p class="contact-alert contact-alert-err">Escribe el nombre del candidato.</p>
+    <% } %>
+
+    <form action="/distrito/<%= district._id %>/agregar-candidato" method="POST" enctype="multipart/form-data" class="admin-form">
+      <label>Nombre del candidato <input type="text" name="name" required></label>
+
+      <label>Foto (opcional)
+        <input type="file" name="photo" accept="image/*">
+      </label>
+
+      <fieldset class="admin-fieldset">
+        <legend>Partido</legend>
+        <label class="inline-radio">
+          <input type="radio" name="partyMode" value="independiente" checked onchange="cumbreToggleSuggestParty()"> Es candidato independiente
+        </label>
+        <label class="inline-radio">
+          <input type="radio" name="partyMode" value="partido" onchange="cumbreToggleSuggestParty()"> Pertenece a un partido
+        </label>
+        <div id="suggest-party-wrap" style="display:none;">
+          <label>Partido
+            <select name="partyKey" id="suggest-party-select">
+              <% parties.forEach(function(p){ %>
+                <% if (p.key !== 'otro') { %>
+                  <option value="<%= p.key %>"><%= p.name %></option>
+                <% } %>
+              <% }); %>
+            </select>
+          </label>
+        </div>
+      </fieldset>
+
+      <button type="submit" class="btn btn-vote">Agregar y votar por él/ella</button>
+    </form>
+
+    <script>
+      function cumbreToggleSuggestParty() {
+        const isParty = document.querySelector('input[name="partyMode"]:checked').value === 'partido';
+        document.getElementById('suggest-party-wrap').style.display = isParty ? '' : 'none';
+      }
+    </script>
+  </details>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Resultados en vivo</h2>
+    <span class="live-dot">● en vivo</span>
+  </div>
+  <div id="results-chart" class="bulletin-bars">
+    <p class="empty">Cargando resultados…</p>
+  </div>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Distribución de opinión</h2>
+  </div>
+  <div id="results-pie-wrap" style="max-width:480px;margin:0 auto;">
+    <canvas id="results-pie"></canvas>
+  </div>
+</section>
+
+<section class="results-panel">
+  <div class="results-head">
+    <h2>Historial de votos</h2>
+  </div>
+  <ul id="vote-history" class="comment-list">
+    <li class="empty">Cargando historial…</li>
+  </ul>
 </section>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>

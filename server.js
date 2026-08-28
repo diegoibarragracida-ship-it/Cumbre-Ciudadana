@@ -60,6 +60,7 @@ app.use('/auth', require('./routes/auth'));
 app.use('/voto', require('./routes/votes'));
 app.use('/comentario', require('./routes/comments'));
 app.use('/admin', require('./routes/admin'));
+app.use('/', require('./routes/contact'));
 app.use('/', require('./routes/pages'));
 
 // 404
