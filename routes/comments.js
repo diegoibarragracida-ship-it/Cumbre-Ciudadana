@@ -1,9 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { ensureAuth } = require('./middleware');
+const { ensureAuth, asyncHandler, validObjectId } = require('./middleware');
 const Comment = require('../models/Comment');
 
-router.post('/:candidateId', ensureAuth, async (req, res) => {
+router.post('/:candidateId', validObjectId('candidateId'), ensureAuth, asyncHandler(async (req, res) => {
   const text = (req.body.text || '').trim();
   if (!text) return res.redirect(`/candidato/${req.params.candidateId}`);
 
@@ -14,6 +14,6 @@ router.post('/:candidateId', ensureAuth, async (req, res) => {
   });
 
   res.redirect(`/candidato/${req.params.candidateId}`);
-});
+}));
 
 module.exports = router;
