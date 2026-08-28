@@ -7,10 +7,7 @@ const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
 const Vote = require('../models/Vote');
 const PARTIES = require('../config/parties');
-<<<<<<< HEAD
 const mongoose = require('mongoose');
-=======
->>>>>>> e6ab9edfc52f0cb3445d2042da7d19d829e41f50
 
 // Igual que en /admin: la foto se guarda en memoria y se convierte a
 // base64 para meterla directo en Mongo (el disco de Render es efimero).
@@ -69,12 +66,9 @@ router.get('/distrito/:id', async (req, res) => {
 //  - Su voto se registra en automatico para el candidato recien creado.
 router.post('/distrito/:id/agregar-candidato', ensureAuth, upload.single('photo'), async (req, res) => {
   try {
-<<<<<<< HEAD
     if (!mongoose.isValidObjectId(req.params.id)) {
       return res.status(404).send('Distrito no encontrado');
     }
-=======
->>>>>>> e6ab9edfc52f0cb3445d2042da7d19d829e41f50
     const district = await District.findById(req.params.id);
     if (!district) return res.status(404).send('Distrito no encontrado');
 
