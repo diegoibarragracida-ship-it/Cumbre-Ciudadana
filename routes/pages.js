@@ -58,7 +58,7 @@ router.get('/api/distrito/:id/resultados', async (req, res) => {
   const candidates = await Candidate.find({ district: req.params.id });
   const results = await Promise.all(candidates.map(async (c) => {
     const votes = await Vote.countDocuments({ candidate: c._id });
-    return { id: c._id, name: c.name, party: c.party, votes };
+    return { id: c._id, name: c.name, party: c.party, partyColors: c.partyColors, votes };
   }));
   res.json(results);
 });

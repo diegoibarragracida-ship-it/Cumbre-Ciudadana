@@ -4,7 +4,22 @@
   const pieCanvas = document.getElementById('results-pie');
   if (!window.DISTRICT_ID) return;
 
-  const PARTY_COLORS = ['#FF9A44', '#3EE6D0', '#7C9CFF', '#FF5D6C', '#B58CFF', '#6FE07A'];
+  // Solo se usa si un candidato no tiene partyColors guardado (dato viejo)
+  const FALLBACK_COLORS = ['#FF9A44', '#3EE6D0', '#7C9CFF', '#FF5D6C', '#B58CFF', '#6FE07A'];
+
+  // Color principal para representar al candidato en barra/pastel.
+  // Coalicion (varios colores) -> se usa un degradado de todos sus partidos.
+  function primaryColor(c, i) {
+    if (c.partyColors && c.partyColors.length) return c.partyColors[0];
+    return FALLBACK_COLORS[i % FALLBACK_COLORS.length];
+  }
+  function gradientOrColor(c, i) {
+    const colors = (c.partyColors && c.partyColors.length) ? c.partyColors : [FALLBACK_COLORS[i % FALLBACK_COLORS.length]];
+    if (colors.length === 1) return colors[0];
+    const step = 100 / colors.length;
+    const stops = colors.map((col, idx) => `${col} ${(idx * step).toFixed(0)}%, ${col} ${((idx + 1) * step).toFixed(0)}%`);
+    return `linear-gradient(90deg, ${stops.join(', ')})`;
+  }
   let pieChart = null;
 
   async function fetchResults() {
@@ -36,7 +51,8 @@
 
     container.innerHTML = sorted.map((c, i) => {
       const pct = ((c.votes / total) * 100).toFixed(1);
-      const color = PARTY_COLORS[i % PARTY_COLORS.length];
+      const bg = gradientOrColor(c, i);
+      const glow = primaryColor(c, i);
       return `
         <div class="bar-row">
           <div class="bar-label">
@@ -44,7 +60,7 @@
             <span class="bar-party">${escapeHtml(c.party)}</span>
           </div>
           <div class="bar-track">
-            <div class="bar-fill" style="width:${pct}%; background:${color}; box-shadow:0 0 12px 0 ${color}66;"></div>
+            <div class="bar-fill" style="width:${pct}%; background:${bg}; box-shadow:0 0 12px 0 ${glow}66;"></div>
           </div>
           <div class="bar-stats">
             <span class="bar-pct">${pct}%</span>
@@ -65,7 +81,7 @@
       labels: sorted.map(c => c.name),
       datasets: [{
         data: sorted.map(c => c.votes),
-        backgroundColor: sorted.map((c, i) => PARTY_COLORS[i % PARTY_COLORS.length]),
+        backgroundColor: sorted.map((c, i) => primaryColor(c, i)),
         borderColor: '#0d1117',
         borderWidth: 2
       }]

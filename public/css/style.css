@@ -274,7 +274,7 @@ a { color: inherit; }
    Se aplica envolviendo la tarjeta en un div.party-glow. El color (o
    colores, si es coalicion) se pasa por la variable --glow-stops, ya
    armada como lista de "color grados" lista para conic-gradient. */
-.party-glow { position: relative; border-radius: 18px; padding: 2.5px; overflow: hidden; isolation: isolate; }
+.party-glow { position: relative; border-radius: 18px; padding: 5px; overflow: hidden; isolation: isolate; }
 .party-glow::before {
   content: '';
   position: absolute;
@@ -283,7 +283,7 @@ a { color: inherit; }
   transform: translate(-50%, -50%) rotate(0deg);
   background: conic-gradient(from 0deg, var(--glow-stops, transparent 0deg, #3EE6D0 4deg, transparent 24deg, transparent 360deg));
   filter: drop-shadow(0 0 3px rgba(255,255,255,0.5));
-  animation: party-spin 2.6s linear infinite;
+  animation: party-spin 6.5s linear infinite;
   z-index: 0;
 }
 .party-glow > * { position: relative; z-index: 1; }

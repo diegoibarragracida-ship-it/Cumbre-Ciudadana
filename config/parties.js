@@ -21,7 +21,7 @@ module.exports = [
   { key: 'pri', name: 'PRI', color: '#0D7137' },
   { key: 'pvem', name: 'PVEM', color: '#1AA64A' },
   { key: 'pt', name: 'PT', color: '#D52B1E' },
-  { key: 'mc', name: 'Movimiento Ciudadano', color: '#FF6D02' },
+  { key: 'mc', name: 'Movimiento Ciudadano', color: '#FF2D8C' },
   { key: 'paz', name: 'PAZ', color: '#7B2FBE' },
   { key: 'somos-mx', name: 'Somos México', color: '#5B7FA6' },
   // Opción libre para partidos/candidaturas locales que no están en
