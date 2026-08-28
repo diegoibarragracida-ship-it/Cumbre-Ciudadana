@@ -9,39 +9,78 @@
   </div>
 
   <%
-    // Animacion decorativa: lineas que conectan puntos simulando que
-    // suben y bajan, como una grafica "en vivo". Se arma un patron de
-    // un periodo (300px de ancho) y se repite varias veces seguidas
-    // para que, al animar el desplazamiento en CSS, la vuelta sea
-    // perfectamente continua (el primer y ultimo punto de cada
-    // periodo coinciden en Y).
-    function buildLivePoints(periodPattern, repeats) {
-      const pts = [];
-      for (let r = 0; r < repeats; r++) {
-        periodPattern.forEach(([x, y]) => pts.push(`${x + r * 300},${y}`));
-      }
-      const [lastX, lastY] = periodPattern[0];
-      pts.push(`${lastX + repeats * 300},${lastY}`);
-      return pts.join(' ');
+    // Grafica decorativa del hero: una sola linea (sin repetirse ni
+    // hacer scroll) que se dibuja sola con stroke-dashoffset, y cada
+    // punto destella justo cuando el trazo llega a el.
+    //
+    // Para lograr la sincronizacion exacta, calculamos aqui:
+    //  1) la longitud total de la linea (suma de distancias entre
+    //     puntos consecutivos), que es lo que usamos como
+    //     stroke-dasharray/dashoffset para "dibujar" el trazo con CSS.
+    //  2) la fraccion acumulada de esa longitud en la que cae cada
+    //     punto, y con eso generamos un @keyframes distinto para cada
+    //     punto (dot-flash-N) cuyo "destello" ocurre exactamente en el
+    //     mismo porcentaje del ciclo en el que el trazo pasa por ahi.
+    const CHART_POINTS = [[0,64],[70,46],[140,58],[210,28],[280,42],[350,18],[420,34],[490,10],[560,26]];
+    const CHART_W = CHART_POINTS[CHART_POINTS.length - 1][0];
+    const CHART_H = 90;
+    const CYCLE = 7; // segundos que dura un ciclo completo (dibujar + pausa + desvanecer)
+    const DRAW_END = 60;  // % del ciclo en que termina de dibujarse
+    const HOLD_END = 86;  // % del ciclo hasta donde se queda visible
+    const FADE_END = 97;  // % del ciclo en que termina de desvanecerse
+
+    let totalLen = 0;
+    const cum = [0];
+    for (let i = 1; i < CHART_POINTS.length; i++) {
+      const [x1, y1] = CHART_POINTS[i - 1];
+      const [x2, y2] = CHART_POINTS[i];
+      totalLen += Math.hypot(x2 - x1, y2 - y1);
+      cum.push(totalLen);
     }
-    const REPEATS = 5;
-    const lineA = buildLivePoints([[0,60],[50,32],[100,55],[150,18],[200,50],[250,28]], REPEATS);
-    const lineB = buildLivePoints([[0,72],[50,58],[100,78],[150,48],[200,66],[250,42]], REPEATS);
-    const dotsA = [];
-    for (let r = 0; r < REPEATS; r++) {
-      [[0,60],[50,32],[100,55],[150,18],[200,50],[250,28]].forEach(([x, y], i) => {
-        dotsA.push({ x: x + r * 300, y, delay: (i * 0.18).toFixed(2) });
-      });
-    }
+
+    const linePoints = CHART_POINTS.map(([x, y]) => `${x},${y}`).join(' ');
+
+    const dotKeyframes = CHART_POINTS.map(([x, y], i) => {
+      const arrivalPct = (cum[i] / totalLen) * DRAW_END;
+      const flashPct = Math.min(arrivalPct + 2.5, DRAW_END);
+      const p0 = Math.max(arrivalPct - 0.1, 0).toFixed(2);
+      return `
+        @keyframes dot-flash-${i} {
+          0% { opacity: 0; transform: scale(0.3); }
+          ${p0}% { opacity: 0; transform: scale(0.3); }
+          ${arrivalPct.toFixed(2)}% { opacity: 1; transform: scale(2.2); filter: drop-shadow(0 0 6px var(--cyan)); }
+          ${flashPct.toFixed(2)}% { opacity: 1; transform: scale(1); filter: none; }
+          ${HOLD_END}% { opacity: 1; transform: scale(1); }
+          ${FADE_END}% { opacity: 0; transform: scale(0.3); }
+          100% { opacity: 0; transform: scale(0.3); }
+        }
+        .hero-chart-dot-${i} { animation: dot-flash-${i} ${CYCLE}s ease-in-out infinite; }
+      `;
+    }).join('\n');
   %>
+  <style>
+    @keyframes hero-chart-draw {
+      0% { stroke-dashoffset: <%= totalLen.toFixed(2) %>; opacity: 1; }
+      <%= DRAW_END %>% { stroke-dashoffset: 0; opacity: 1; }
+      <%= HOLD_END %>% { stroke-dashoffset: 0; opacity: 1; }
+      <%= FADE_END %>% { stroke-dashoffset: 0; opacity: 0; }
+      100% { stroke-dashoffset: <%= totalLen.toFixed(2) %>; opacity: 0; }
+    }
+    .hero-chart-line-a {
+      stroke-dasharray: <%= totalLen.toFixed(2) %>;
+      animation: hero-chart-draw <%= CYCLE %>s ease-in-out infinite;
+    }
+    <%- dotKeyframes %>
+  </style>
   <div class="hero-chart-decoration" aria-hidden="true">
-    <svg class="hero-chart-svg" width="<%= REPEATS * 300 %>" height="90" viewBox="0 0 <%= REPEATS * 300 %> 90" preserveAspectRatio="none">
-      <polyline class="hero-chart-line hero-chart-line-b" points="<%= lineB %>" />
-      <polyline class="hero-chart-line hero-chart-line-a" points="<%= lineA %>" />
-      <% dotsA.forEach(function(p){ %>
-        <circle class="hero-chart-dot" cx="<%= p.x %>" cy="<%= p.y %>" r="3.5" style="animation-delay: <%= p.delay %>s;" />
-      <% }); %>
-    </svg>
+    <div class="hero-chart-float">
+      <svg class="hero-chart-svg" viewBox="0 0 <%= CHART_W %> <%= CHART_H %>" preserveAspectRatio="none">
+        <polyline class="hero-chart-line hero-chart-line-a" points="<%= linePoints %>" />
+        <% CHART_POINTS.forEach(function(p, i){ %>
+          <circle class="hero-chart-dot hero-chart-dot-<%= i %>" cx="<%= p[0] %>" cy="<%= p[1] %>" r="3.5" />
+        <% }); %>
+      </svg>
+    </div>
   </div>
 
   <div class="hero-stats">

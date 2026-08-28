@@ -142,23 +142,26 @@ a { color: inherit; }
 .hero-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--cyan); line-height: 1; }
 .hero-stat-label { font-size: 0.78rem; color: var(--text-faint); }
 
-/* ===== Grafica de lineas decorativa del hero: puntos conectados que
-   suben y bajan, corriendo continuamente como si fuera "en vivo". El
-   SVG es mas ancho que su contenedor (overflow hidden) y se desplaza
-   con CSS; el patron de puntos se repite cada 300px, asi que al mover
-   exactamente ese ancho la vuelta es perfectamente continua. */
-.hero-chart-decoration { width: 100%; max-width: 760px; height: 90px; overflow: hidden; margin: 22px 0 4px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.hero-chart-svg { display: block; animation: hero-chart-scroll 12s linear infinite; }
-@keyframes hero-chart-scroll { from { transform: translateX(0); } to { transform: translateX(-600px); } }
+/* ===== Grafica de lineas decorativa del hero: flota con un vaiven
+   suave, la linea se dibuja sola (stroke-dashoffset) y cada punto
+   destella justo cuando el trazo llega a el. Los porcentajes de cada
+   punto se calculan en el EJS a partir de la distancia real recorrida
+   sobre la linea, para que el destello quede sincronizado con el
+   dibujo — por eso cada punto tiene su propio @keyframes generado
+   en la vista (ver views/index.ejs). */
+.hero-chart-decoration { width: 100%; max-width: 760px; height: 90px; margin: 22px 0 4px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.hero-chart-float { animation: hero-chart-float 5.5s ease-in-out infinite; }
+@keyframes hero-chart-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+.hero-chart-svg { display: block; width: 100%; height: 90px; overflow: visible; }
 .hero-chart-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
-.hero-chart-line-a { stroke: var(--cyan); stroke-width: 2.5; opacity: 0.85; }
-.hero-chart-line-b { stroke: var(--amber); stroke-width: 2; opacity: 0.4; }
-.hero-chart-dot { fill: var(--cyan); animation: hero-chart-pulse 2.4s ease-in-out infinite; }
-@keyframes hero-chart-pulse { 0%,100% { r: 3.5; opacity: 1; } 50% { r: 5; opacity: 0.5; } }
+.hero-chart-line-a { stroke: var(--cyan); stroke-width: 2.5; filter: drop-shadow(0 0 3px rgba(62,230,208,0.5)); }
+.hero-chart-dot { fill: var(--cyan); transform-box: fill-box; transform-origin: center; }
 @media (prefers-reduced-motion: reduce) {
-  .hero-chart-svg { animation: none; }
-  .hero-chart-dot { animation: none; }
+  .hero-chart-float { animation: none; }
+  .hero-chart-line-a { animation: none !important; opacity: 1; }
+  .hero-chart-dot { animation: none !important; opacity: 1; transform: none !important; }
 }
+
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.74rem;
