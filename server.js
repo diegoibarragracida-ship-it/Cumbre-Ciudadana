@@ -66,14 +66,5 @@ app.use('/', require('./routes/pages'));
 // 404
 app.use((req, res) => res.status(404).render('404', { title: 'No encontrado' }));
 
-// Manejador de errores global: ultima linea de defensa. Si algun error
-// se escapa de los try/catch y asyncHandler de las rutas, se responde
-// con un error controlado en vez de tumbar todo el proceso de Node.
-app.use((err, req, res, next) => {
-  console.error('Error no controlado:', err);
-  if (res.headersSent) return next(err);
-  res.status(500).render('404', { title: 'Algo salio mal' });
-});
-
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));

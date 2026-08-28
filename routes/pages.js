@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const { ensureAuth, asyncHandler, validObjectId } = require('./middleware');
+const { ensureAuth } = require('./middleware');
 const District = require('../models/District');
 const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
@@ -25,7 +25,7 @@ router.get('/privacidad', (req, res) => {
 });
 
 // Home: lista de distritos agrupados
-router.get('/', asyncHandler(async (req, res) => {
+router.get('/', async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
   const local = districts.filter(d => d.type === 'local');
   const federal = districts.filter(d => d.type === 'federal');
@@ -35,12 +35,12 @@ router.get('/', asyncHandler(async (req, res) => {
     title: 'Inicio', local, federal, error: req.query.error,
     totalVotes, totalCandidates, totalDistricts: districts.length
   });
-}));
+});
 
 // Detalle de distrito: candidatos + grafica
-router.get('/distrito/:id', validObjectId(), asyncHandler(async (req, res) => {
+router.get('/distrito/:id', async (req, res) => {
   const district = await District.findById(req.params.id);
-  if (!district) return res.status(404).render('404', { title: 'No encontrado' });
+  if (!district) return res.status(404).send('Distrito no encontrado');
 
   const candidates = await Candidate.find({ district: district._id });
 
@@ -51,7 +51,7 @@ router.get('/distrito/:id', validObjectId(), asyncHandler(async (req, res) => {
   }
 
   res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error });
-}));
+});
 
 // Un ciudadano agrega su propio candidato porque no lo encontro en la lista
 // del distrito. Reglas del negocio:
@@ -60,58 +60,63 @@ router.get('/distrito/:id', validObjectId(), asyncHandler(async (req, res) => {
 //    marcarlo como independiente. No hay opcion de editar/eliminar aqui:
 //    eso queda exclusivo para /admin (ensureAdmin).
 //  - Su voto se registra en automatico para el candidato recien creado.
-router.post('/distrito/:id/agregar-candidato', validObjectId(), ensureAuth, upload.single('photo'), asyncHandler(async (req, res) => {
-  const district = await District.findById(req.params.id);
-  if (!district) return res.status(404).render('404', { title: 'No encontrado' });
+router.post('/distrito/:id/agregar-candidato', ensureAuth, upload.single('photo'), async (req, res) => {
+  try {
+    const district = await District.findById(req.params.id);
+    if (!district) return res.status(404).send('Distrito no encontrado');
 
-  const name = (req.body.name || '').trim();
-  if (!name) return res.redirect(`/distrito/${district._id}?error=nombre_requerido`);
+    const name = (req.body.name || '').trim();
+    if (!name) return res.redirect(`/distrito/${district._id}?error=nombre_requerido`);
 
-  const isIndependent = req.body.partyMode !== 'partido';
-  let partyLabel, partyColors;
+    const isIndependent = req.body.partyMode !== 'partido';
+    let partyLabel, partyColors;
 
-  if (!isIndependent) {
-    const matched = PARTIES.find(p => p.key === req.body.partyKey && p.key !== 'otro');
-    if (matched) {
-      partyLabel = matched.name;
-      partyColors = [matched.color];
+    if (!isIndependent) {
+      const matched = PARTIES.find(p => p.key === req.body.partyKey && p.key !== 'otro');
+      if (matched) {
+        partyLabel = matched.name;
+        partyColors = [matched.color];
+      }
     }
+    if (!partyLabel) {
+      partyLabel = 'Independiente';
+      partyColors = ['#9AA5B1'];
+    }
+
+    let photoUrl;
+    if (req.file) {
+      photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    }
+
+    const candidate = await Candidate.create({
+      name,
+      party: partyLabel,
+      partyType: 'partido',
+      partyColors,
+      photoUrl,
+      district: district._id,
+      addedByUser: req.user._id,
+      isCitizenAdded: true
+    });
+
+    // El voto de quien lo agrega cuenta en automatico para su candidato.
+    await Vote.findOneAndUpdate(
+      { user: req.user._id, district: district._id },
+      { user: req.user._id, district: district._id, candidate: candidate._id, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
+
+    res.redirect(`/distrito/${district._id}`);
+  } catch (err) {
+    console.error(err);
+    res.status(400).send('Error al agregar candidato: ' + err.message);
   }
-  if (!partyLabel) {
-    partyLabel = 'Independiente';
-    partyColors = ['#9AA5B1'];
-  }
-
-  let photoUrl;
-  if (req.file) {
-    photoUrl = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-  }
-
-  const candidate = await Candidate.create({
-    name,
-    party: partyLabel,
-    partyType: 'partido',
-    partyColors,
-    photoUrl,
-    district: district._id,
-    addedByUser: req.user._id,
-    isCitizenAdded: true
-  });
-
-  // El voto de quien lo agrega cuenta en automatico para su candidato.
-  await Vote.findOneAndUpdate(
-    { user: req.user._id, district: district._id },
-    { user: req.user._id, district: district._id, candidate: candidate._id, createdAt: new Date() },
-    { upsert: true, new: true }
-  );
-
-  res.redirect(`/distrito/${district._id}`);
-}));
+});
 
 // Detalle de candidato: bio + comentarios
-router.get('/candidato/:id', validObjectId(), asyncHandler(async (req, res) => {
+router.get('/candidato/:id', async (req, res) => {
   const candidate = await Candidate.findById(req.params.id).populate('district');
-  if (!candidate) return res.status(404).render('404', { title: 'No encontrado' });
+  if (!candidate) return res.status(404).send('Candidato no encontrado');
 
   const comments = await Comment.find({ candidate: candidate._id })
     .populate('user', 'name photo')
@@ -125,20 +130,20 @@ router.get('/candidato/:id', validObjectId(), asyncHandler(async (req, res) => {
   }
 
   res.render('candidate', { title: candidate.name, candidate, comments, myVote, error: req.query.error });
-}));
+});
 
 // API: resultados en vivo para la grafica (Chart.js)
-router.get('/api/distrito/:id/resultados', validObjectId(), asyncHandler(async (req, res) => {
+router.get('/api/distrito/:id/resultados', async (req, res) => {
   const candidates = await Candidate.find({ district: req.params.id });
   const results = await Promise.all(candidates.map(async (c) => {
     const votes = await Vote.countDocuments({ candidate: c._id });
     return { id: c._id, name: c.name, party: c.party, partyColors: c.partyColors, votes };
   }));
   res.json(results);
-}));
+});
 
 // API: historial de votos del distrito (quien voto por quien)
-router.get('/api/distrito/:id/historial', validObjectId(), asyncHandler(async (req, res) => {
+router.get('/api/distrito/:id/historial', async (req, res) => {
   const votes = await Vote.find({ district: req.params.id })
     .sort({ createdAt: -1 })
     .limit(100)
@@ -154,6 +159,6 @@ router.get('/api/distrito/:id/historial', validObjectId(), asyncHandler(async (r
   }));
 
   res.json(historial);
-}));
+});
 
 module.exports = router;
