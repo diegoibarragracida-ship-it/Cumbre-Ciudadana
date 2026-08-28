@@ -8,6 +8,42 @@
     <a href="/contacto" class="btn btn-ghost" style="text-decoration:none;">Quiero una plataforma así</a>
   </div>
 
+  <%
+    // Animacion decorativa: lineas que conectan puntos simulando que
+    // suben y bajan, como una grafica "en vivo". Se arma un patron de
+    // un periodo (300px de ancho) y se repite varias veces seguidas
+    // para que, al animar el desplazamiento en CSS, la vuelta sea
+    // perfectamente continua (el primer y ultimo punto de cada
+    // periodo coinciden en Y).
+    function buildLivePoints(periodPattern, repeats) {
+      const pts = [];
+      for (let r = 0; r < repeats; r++) {
+        periodPattern.forEach(([x, y]) => pts.push(`${x + r * 300},${y}`));
+      }
+      const [lastX, lastY] = periodPattern[0];
+      pts.push(`${lastX + repeats * 300},${lastY}`);
+      return pts.join(' ');
+    }
+    const REPEATS = 5;
+    const lineA = buildLivePoints([[0,60],[50,32],[100,55],[150,18],[200,50],[250,28]], REPEATS);
+    const lineB = buildLivePoints([[0,72],[50,58],[100,78],[150,48],[200,66],[250,42]], REPEATS);
+    const dotsA = [];
+    for (let r = 0; r < REPEATS; r++) {
+      [[0,60],[50,32],[100,55],[150,18],[200,50],[250,28]].forEach(([x, y], i) => {
+        dotsA.push({ x: x + r * 300, y, delay: (i * 0.18).toFixed(2) });
+      });
+    }
+  %>
+  <div class="hero-chart-decoration" aria-hidden="true">
+    <svg class="hero-chart-svg" width="<%= REPEATS * 300 %>" height="90" viewBox="0 0 <%= REPEATS * 300 %> 90" preserveAspectRatio="none">
+      <polyline class="hero-chart-line hero-chart-line-b" points="<%= lineB %>" />
+      <polyline class="hero-chart-line hero-chart-line-a" points="<%= lineA %>" />
+      <% dotsA.forEach(function(p){ %>
+        <circle class="hero-chart-dot" cx="<%= p.x %>" cy="<%= p.y %>" r="3.5" style="animation-delay: <%= p.delay %>s;" />
+      <% }); %>
+    </svg>
+  </div>
+
   <div class="hero-stats">
     <div class="hero-stat">
       <span class="hero-stat-num"><%= totalDistricts %></span>

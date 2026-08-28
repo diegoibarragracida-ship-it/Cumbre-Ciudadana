@@ -141,6 +141,24 @@ a { color: inherit; }
 .hero-stat { display: flex; flex-direction: column; gap: 2px; }
 .hero-stat-num { font-family: var(--font-display); font-weight: 700; font-size: 1.8rem; color: var(--cyan); line-height: 1; }
 .hero-stat-label { font-size: 0.78rem; color: var(--text-faint); }
+
+/* ===== Grafica de lineas decorativa del hero: puntos conectados que
+   suben y bajan, corriendo continuamente como si fuera "en vivo". El
+   SVG es mas ancho que su contenedor (overflow hidden) y se desplaza
+   con CSS; el patron de puntos se repite cada 300px, asi que al mover
+   exactamente ese ancho la vuelta es perfectamente continua. */
+.hero-chart-decoration { width: 100%; max-width: 760px; height: 90px; overflow: hidden; margin: 22px 0 4px; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.hero-chart-svg { display: block; animation: hero-chart-scroll 12s linear infinite; }
+@keyframes hero-chart-scroll { from { transform: translateX(0); } to { transform: translateX(-600px); } }
+.hero-chart-line { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.hero-chart-line-a { stroke: var(--cyan); stroke-width: 2.5; opacity: 0.85; }
+.hero-chart-line-b { stroke: var(--amber); stroke-width: 2; opacity: 0.4; }
+.hero-chart-dot { fill: var(--cyan); animation: hero-chart-pulse 2.4s ease-in-out infinite; }
+@keyframes hero-chart-pulse { 0%,100% { r: 3.5; opacity: 1; } 50% { r: 5; opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .hero-chart-svg { animation: none; }
+  .hero-chart-dot { animation: none; }
+}
 .eyebrow {
   font-family: var(--font-mono);
   font-size: 0.74rem;
