@@ -25,6 +25,7 @@ app.set('trust proxy', 1);
 // --- Vistas ---
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
 app.use(expressLayouts);
 app.set('layout', 'partials/layout');
 
@@ -65,6 +66,17 @@ app.use('/', require('./routes/pages'));
 
 // 404
 app.use((req, res) => res.status(404).render('404', { title: 'No encontrado' }));
+
+// Manejador global de errores: es la ultima red de seguridad. Si algo
+// truena en cualquier ruta (aunque se nos haya pasado envolverla con
+// asyncHandler), esto evita que el proceso entero se caiga: respondemos
+// con una pagina de error en vez de dejar que Node tumbe el servidor.
+app.use((err, req, res, next) => {
+  console.error(err);
+  const isBadId = err.name === 'CastError';
+  res.status(isBadId ? 404 : 500);
+  res.render('404', { title: isBadId ? 'No encontrado' : 'Error del servidor' });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Servidor corriendo en el puerto ${PORT}`));

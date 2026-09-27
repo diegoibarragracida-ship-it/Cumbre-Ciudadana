@@ -3,8 +3,20 @@
 
 <% if (error === 'auth_required') { %>
   <p class="contact-alert contact-alert-err" style="max-width:520px;">
-    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+    Necesitas iniciar sesión con Google o Facebook para poder votar o comentar. Usa alguno de los botones de la parte de arriba.
   </p>
+<% } %>
+
+<% if (votado) { %>
+  <div class="contact-alert" style="max-width:560px;display:flex;flex-wrap:wrap;align-items:center;gap:12px;">
+    <span>✓ Tu voto quedó registrado. ¡Gracias por participar!</span>
+    <a
+      class="btn btn-facebook"
+      href="https://www.facebook.com/sharer/sharer.php?u=<%= encodeURIComponent(districtUrl) %>"
+      target="_blank" rel="noopener"
+      onclick="window.open(this.href,'compartir-fb','width=580,height=520');return false;"
+    >Compartir mi voto en Facebook</a>
+  </div>
 <% } %>
 
 <%
@@ -120,6 +132,36 @@
   <div id="results-pie-wrap" style="max-width:480px;margin:0 auto;">
     <canvas id="results-pie"></canvas>
   </div>
+</section>
+
+<section class="comments-section" id="comentarios-encuesta">
+  <h2>Comentarios sobre la encuesta</h2>
+
+  <% if (user) { %>
+    <form action="/comentario/distrito/<%= district._id %>" method="POST" class="comment-form">
+      <textarea name="text" maxlength="500" rows="3" placeholder="Comparte tu opinión sobre esta encuesta…" required></textarea>
+      <button type="submit" class="btn btn-vote">Publicar comentario</button>
+    </form>
+  <% } else { %>
+    <p class="empty">Inicia sesión con Google o Facebook para comentar.</p>
+  <% } %>
+
+  <ul class="comment-list">
+    <% pollComments.forEach(function(c){ %>
+      <li>
+        <div class="comment-avatar">
+          <% if (c.user && c.user.photo) { %><img src="<%= c.user.photo %>" alt=""><% } %>
+        </div>
+        <div>
+          <p class="comment-author"><%= c.user ? c.user.name : 'Usuario' %> <span class="comment-date"><%= new Date(c.createdAt).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) %></span></p>
+          <p class="comment-text"><%= c.text %></p>
+        </div>
+      </li>
+    <% }); %>
+    <% if (pollComments.length === 0) { %>
+      <p class="empty">Sé la primera persona en comentar sobre esta encuesta.</p>
+    <% } %>
+  </ul>
 </section>
 
 <section class="results-panel">

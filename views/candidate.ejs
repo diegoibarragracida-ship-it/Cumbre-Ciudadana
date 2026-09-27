@@ -2,7 +2,7 @@
 
 <% if (error === 'auth_required') { %>
   <p class="contact-alert contact-alert-err" style="max-width:520px;">
-    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" en la parte de arriba.
+    Necesitas iniciar sesión con Google o Facebook para poder votar o comentar. Usa alguno de los botones de la parte de arriba.
   </p>
 <% } %>
 
@@ -45,7 +45,7 @@
       <button type="submit" class="btn btn-vote">Publicar comentario</button>
     </form>
   <% } else { %>
-    <p class="empty">Inicia sesión con Google para comentar.</p>
+    <p class="empty">Inicia sesión con Google o Facebook para comentar.</p>
   <% } %>
 
   <ul class="comment-list">
