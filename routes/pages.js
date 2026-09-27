@@ -25,6 +25,11 @@ router.get('/privacidad', (req, res) => {
   res.render('privacy', { title: 'Política de privacidad' });
 });
 
+// Instrucciones de eliminacion de datos (requerida por Facebook Login)
+router.get('/eliminar-datos', (req, res) => {
+  res.render('delete-data', { title: 'Eliminación de datos' });
+});
+
 // Home: lista de distritos agrupados
 router.get('/', asyncHandler(async (req, res) => {
   const districts = await District.find().sort({ type: 1, number: 1 });
