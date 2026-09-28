@@ -1,0 +1,4 @@
+Pon aquí de 3 a 5 fotos a pantalla completa (horizontales, 1920px de ancho, JPG o WebP, menos de 400 KB cada una).
+Se usan en orden alfabético: 01-..., 02-..., 03-...
+Sugerencia de orden: 01 panorámica del estado (Pico de Orizaba), 02 ciudad/puerto, 03 gente/plaza, 04 cierre (amanecer).
+Usa fotos propias o con licencia libre (Unsplash, Pexels). Si esta carpeta no tiene imágenes, la página usa la escena 3D.

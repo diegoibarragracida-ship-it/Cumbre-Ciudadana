@@ -7,6 +7,16 @@ const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
 const Vote = require('../models/Vote');
 const PARTIES = require('../config/parties');
+const fs = require('fs');
+const path = require('path');
+
+// Fotos de la entrada: public/img/scroll/*.jpg|webp|png (orden alfabetico)
+function scenePhotos() {
+  try {
+    return fs.readdirSync(path.join(__dirname, '../public/img/scroll'))
+      .filter(f => /\.(jpe?g|webp|png)$/i.test(f)).sort().map(f => '/img/scroll/' + f);
+  } catch (e) { return []; }
+}
 
 // Igual que en /admin: la foto se guarda en memoria y se convierte a
 // base64 para meterla directo en Mongo (el disco de Render es efimero).
@@ -69,10 +79,15 @@ async function buildStateSummary() {
 router.get('/', async (req, res) => {
   const [summary, totalCandidates] = await Promise.all([buildStateSummary(), Candidate.countDocuments()]);
   const regions = [...new Set(summary.cards.map(c => c.region))].sort();
+  const photos = scenePhotos();
+  const usePhotos = photos.length >= 2;
   res.render('index', {
     title: 'Veracruz', error: req.query.error,
-    summary, regions, totalCandidates,
-    extraCss: ['/css/landing.css'], extraJs: ['/js/landing.js']
+    summary, regions, totalCandidates, photos: usePhotos ? photos : [],
+    extraCss: ['/css/landing.css'],
+    extraJs: usePhotos
+      ? ['/js/storyphotos.js', '/js/story.js', '/js/landing.js']
+      : ['https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js', '/js/story3d.js', '/js/story.js', '/js/landing.js']
   });
 });
 
