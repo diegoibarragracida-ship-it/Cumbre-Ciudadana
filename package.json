@@ -9,6 +9,7 @@
   "scripts": {
     "start": "node server.js",
     "seed": "node seed/seed.js",
+    "seed:veracruz": "node seed/seed-veracruz.js",
     "seed:votes": "node seed/fake-votes.js",
     "seed:rename-fake": "node seed/rename-fake-voters.js",
     "backup": "node seed/backup.js",

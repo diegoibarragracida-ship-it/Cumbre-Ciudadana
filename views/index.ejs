@@ -1,233 +1,120 @@
-<section class="hero hero-lg">
-  <p class="eyebrow">Boletín ciudadano · en curso</p>
-  <h1>¿Quién va adelante en tu distrito?</h1>
-  <p class="hero-sub">Consulta de opinión sobre las candidaturas locales y federales de la región de las Altas Montañas de Veracruz. Entra con tu cuenta, elige tu distrito y emite tu voto de opinión.</p>
+<%
+  const T = summary.totals;
+  const cards = summary.cards;
+  const hot = cards.filter(c => c.votes > 0).sort((a, b) => b.votes - a.votes).slice(0, 3);
+%>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i><span class="grain"></span></div>
 
-  <div class="hero-actions">
-    <a href="#distritos" class="btn btn-vote" style="width:auto;">Ver mi distrito</a>
-    <a href="/contacto" class="btn btn-ghost" style="text-decoration:none;">Quiero una plataforma así</a>
+<section class="l-hero">
+  <p class="l-pill"><span class="l-dot"></span> En vivo · Ejercicio ciudadano de opinión 2027</p>
+  <h1 class="l-title">
+    <span class="l-line">Todo Veracruz.</span>
+    <span class="l-line l-grad">Distrito por distrito.</span>
+  </h1>
+  <p class="l-sub">Explora los distritos federales y locales del estado, vota con tu cuenta de Google y mira en tiempo real quién va adelante en tu zona.</p>
+
+  <div class="l-cta">
+    <a href="#explorar" class="l-btn l-btn-primary">Encuentra tu distrito <span aria-hidden="true">→</span></a>
+    <a href="#como" class="l-btn l-btn-ghost">Cómo funciona</a>
   </div>
 
-  <%
-    // Grafica decorativa del hero: una sola linea (sin repetirse ni
-    // hacer scroll) que se dibuja sola con stroke-dashoffset, y cada
-    // punto destella justo cuando el trazo llega a el.
-    //
-    // Para lograr la sincronizacion exacta, calculamos aqui:
-    //  1) la longitud total de la linea (suma de distancias entre
-    //     puntos consecutivos), que es lo que usamos como
-    //     stroke-dasharray/dashoffset para "dibujar" el trazo con CSS.
-    //  2) la fraccion acumulada de esa longitud en la que cae cada
-    //     punto, y con eso generamos un @keyframes distinto para cada
-    //     punto (dot-flash-N) cuyo "destello" ocurre exactamente en el
-    //     mismo porcentaje del ciclo en el que el trazo pasa por ahi.
-    const CHART_POINTS = [[0,64],[70,46],[140,58],[210,28],[280,42],[350,18],[420,34],[490,10],[560,26]];
-    const CHART_W = CHART_POINTS[CHART_POINTS.length - 1][0];
-    const CHART_H = 90;
-    const CYCLE = 7; // segundos que dura un ciclo completo (dibujar + pausa + desvanecer)
-    const DRAW_END = 60;  // % del ciclo en que termina de dibujarse
-    const HOLD_END = 86;  // % del ciclo hasta donde se queda visible
-    const FADE_END = 97;  // % del ciclo en que termina de desvanecerse
-
-    let totalLen = 0;
-    const cum = [0];
-    for (let i = 1; i < CHART_POINTS.length; i++) {
-      const [x1, y1] = CHART_POINTS[i - 1];
-      const [x2, y2] = CHART_POINTS[i];
-      totalLen += Math.hypot(x2 - x1, y2 - y1);
-      cum.push(totalLen);
-    }
-
-    const linePoints = CHART_POINTS.map(([x, y]) => `${x},${y}`).join(' ');
-
-    const dotKeyframes = CHART_POINTS.map(([x, y], i) => {
-      const arrivalPct = (cum[i] / totalLen) * DRAW_END;
-      const flashPct = Math.min(arrivalPct + 2.5, DRAW_END);
-      const p0 = Math.max(arrivalPct - 0.1, 0).toFixed(2);
-      return `
-        @keyframes dot-flash-${i} {
-          0% { opacity: 0; transform: scale(0.3); }
-          ${p0}% { opacity: 0; transform: scale(0.3); }
-          ${arrivalPct.toFixed(2)}% { opacity: 1; transform: scale(2.2); filter: drop-shadow(0 0 6px var(--cyan)); }
-          ${flashPct.toFixed(2)}% { opacity: 1; transform: scale(1); filter: none; }
-          ${HOLD_END}% { opacity: 1; transform: scale(1); }
-          ${FADE_END}% { opacity: 0; transform: scale(0.3); }
-          100% { opacity: 0; transform: scale(0.3); }
-        }
-        .hero-chart-dot-${i} { animation: dot-flash-${i} ${CYCLE}s ease-in-out infinite; }
-      `;
-    }).join('\n');
-  %>
-  <style>
-    @keyframes hero-chart-draw {
-      0% { stroke-dashoffset: <%= totalLen.toFixed(2) %>; opacity: 1; }
-      <%= DRAW_END %>% { stroke-dashoffset: 0; opacity: 1; }
-      <%= HOLD_END %>% { stroke-dashoffset: 0; opacity: 1; }
-      <%= FADE_END %>% { stroke-dashoffset: 0; opacity: 0; }
-      100% { stroke-dashoffset: <%= totalLen.toFixed(2) %>; opacity: 0; }
-    }
-    .hero-chart-line-a {
-      stroke-dasharray: <%= totalLen.toFixed(2) %>;
-      animation: hero-chart-draw <%= CYCLE %>s ease-in-out infinite;
-    }
-    <%- dotKeyframes %>
-  </style>
-  <div class="hero-chart-decoration" aria-hidden="true">
-    <div class="hero-chart-float">
-      <svg class="hero-chart-svg" viewBox="0 0 <%= CHART_W %> <%= CHART_H %>" preserveAspectRatio="none">
-        <polyline class="hero-chart-line hero-chart-line-a" points="<%= linePoints %>" />
-        <% CHART_POINTS.forEach(function(p, i){ %>
-          <circle class="hero-chart-dot hero-chart-dot-<%= i %>" cx="<%= p[0] %>" cy="<%= p[1] %>" r="3.5" />
-        <% }); %>
-      </svg>
-    </div>
+  <div class="l-stats">
+    <div class="l-stat"><b data-count="<%= T.districts %>" data-key="districts">0</b><span>Distritos</span></div>
+    <div class="l-stat"><b data-count="<%= T.federal %>" data-key="federal">0</b><span>Federales</span></div>
+    <div class="l-stat"><b data-count="<%= T.local %>" data-key="local">0</b><span>Locales</span></div>
+    <div class="l-stat"><b data-count="<%= totalCandidates %>">0</b><span>Candidaturas</span></div>
+    <div class="l-stat"><b data-count="<%= T.votes %>" data-key="votes">0</b><span>Votos de opinión</span></div>
   </div>
 
-  <div class="hero-stats">
-    <div class="hero-stat">
-      <span class="hero-stat-num"><%= totalDistricts %></span>
-      <span class="hero-stat-label">Distritos activos</span>
-    </div>
-    <div class="hero-stat">
-      <span class="hero-stat-num"><%= totalCandidates %></span>
-      <span class="hero-stat-label">Candidaturas registradas</span>
-    </div>
-    <div class="hero-stat">
-      <span class="hero-stat-num"><%= totalVotes %></span>
-      <span class="hero-stat-label">Votos de opinión emitidos</span>
-    </div>
+  <% if (hot.length) { %>
+  <div class="l-float" aria-label="Distritos con más participación">
+    <% hot.forEach(function(c, i){ %>
+      <a class="l-glass l-glass-<%= i %>" href="/distrito/<%= c.id %>" style="--c:<%= c.leader ? c.leader.color : '#3EE6D0' %>">
+        <small><%= c.type === 'federal' ? 'Federal' : 'Local' %> <%= c.number %> · <%= c.cabecera || c.name %></small>
+        <strong><%= c.leader ? c.leader.name : 'Sin votos aún' %></strong>
+        <span class="l-bar"><i style="width:<%= c.leader ? c.leader.pct : 0 %>%"></i></span>
+        <em><%= c.leader ? c.leader.pct + '% · ' + c.leader.party : '' %></em>
+      </a>
+    <% }); %>
   </div>
+  <% } %>
 </section>
 
 <% if (error === 'auth_required') { %>
-  <p class="contact-alert contact-alert-err" style="max-width:520px;">
-    Necesitas iniciar sesión con Google para poder votar o comentar. Usa el botón "Entrar con Google" arriba a la derecha.
-  </p>
+  <p class="contact-alert contact-alert-err" style="max-width:520px;">Necesitas iniciar sesión con Google para votar o comentar. Usa el botón "Entrar con Google" arriba a la derecha.</p>
 <% } %>
 
-<section class="ledger" id="distritos">
-  <div class="ledger-col">
-    <h2 class="ledger-title"><span class="tag tag-federal">Federal</span> Distritos federales</h2>
-    <% if (federal.length === 0) { %>
-      <p class="empty">Aún no se han registrado distritos federales.</p>
-    <% } %>
-    <ol class="ledger-list">
-      <% federal.forEach(function(d){ %>
-        <li>
-          <a href="/distrito/<%= d._id %>">
-            <span class="ledger-num"><%= d.number ? String(d.number).padStart(2,'0') : '—' %></span>
-            <span class="ledger-name"><%= d.name %></span>
-            <span class="ledger-arrow">→</span>
-          </a>
-        </li>
-      <% }); %>
-    </ol>
+<section class="l-explore" id="explorar">
+  <div class="l-head reveal">
+    <p class="l-eyebrow">Explora el estado</p>
+    <h2>Elige tu nivel y tu distrito</h2>
   </div>
 
-  <div class="ledger-col">
-    <h2 class="ledger-title"><span class="tag tag-local">Local</span> Distritos locales</h2>
-    <% if (local.length === 0) { %>
-      <p class="empty">Aún no se han registrado distritos locales.</p>
-    <% } %>
-    <ol class="ledger-list">
-      <% local.forEach(function(d){ %>
-        <li>
-          <a href="/distrito/<%= d._id %>">
-            <span class="ledger-num"><%= d.number ? String(d.number).padStart(2,'0') : '—' %></span>
-            <span class="ledger-name"><%= d.name %></span>
-            <span class="ledger-arrow">→</span>
-          </a>
-        </li>
-      <% }); %>
-    </ol>
-  </div>
-</section>
-
-<section class="landing-steps">
-  <p class="landing-eyebrow">Cómo funciona</p>
-  <div class="landing-steps-grid">
-    <div class="landing-step">
-      <span class="landing-step-num">1</span>
-      <h3>Inicia sesión con Google</h3>
-      <p>Solo necesitas tu cuenta de Google. Es gratis, toma segundos y nos ayuda a que cada persona vote una sola vez por distrito.</p>
+  <div class="l-toolbar reveal">
+    <div class="l-tabs" role="tablist" data-tabs>
+      <button role="tab" class="is-on" data-type="all">Todos <em><%= T.districts %></em></button>
+      <button role="tab" data-type="federal">Federales <em><%= T.federal %></em></button>
+      <button role="tab" data-type="local">Locales <em><%= T.local %></em></button>
     </div>
-    <div class="landing-step">
-      <span class="landing-step-num">2</span>
-      <h3>Elige tu distrito</h3>
-      <p>Busca tu distrito federal o local en la lista de arriba y revisa el perfil de cada candidatura, con su partido o coalición.</p>
-    </div>
-    <div class="landing-step">
-      <span class="landing-step-num">3</span>
-      <h3>Vota y opina</h3>
-      <p>Emite tu voto de opinión, deja un comentario si quieres, y consulta los resultados en vivo, la gráfica y el historial de votos.</p>
+    <label class="l-search">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d="M11 4a7 7 0 105 12l4 4 1.4-1.4-4-4A7 7 0 0011 4zm0 2a5 5 0 110 10 5 5 0 010-10z" fill="currentColor"/></svg>
+      <input type="search" placeholder="Busca tu municipio, cabecera o número…" data-search autocomplete="off">
+    </label>
+    <div class="l-chips" data-regions>
+      <button class="is-on" data-region="all">Todo el estado</button>
+      <% regions.forEach(function(r){ %><button data-region="<%= r %>"><%= r %></button><% }); %>
+      <button data-flag="indigenous">Distritos indígenas</button>
     </div>
   </div>
+
+  <div class="l-grid" data-grid>
+    <% cards.forEach(function(c){ %>
+      <a class="l-card reveal" href="/distrito/<%= c.id %>"
+         data-type="<%= c.type %>" data-region="<%= c.region %>" data-ind="<%= c.indigenous ? 1 : 0 %>"
+         data-id="<%= c.id %>"
+         data-q="<%= (c.name + ' ' + c.cabecera + ' ' + c.number + ' ' + c.region).toLowerCase() %>"
+         style="--c:<%= c.leader ? c.leader.color : '#3EE6D0' %>">
+        <span class="l-card-top">
+          <span class="tag tag-<%= c.type %>"><%= c.type === 'federal' ? 'Federal' : 'Local' %></span>
+          <% if (c.indigenous) { %><span class="l-ind">Indígena</span><% } %>
+          <span class="l-num"><%= String(c.number).padStart(2, '0') %></span>
+        </span>
+        <strong class="l-card-name"><%= c.cabecera || c.name %></strong>
+        <small class="l-card-sub"><%= c.region %><% if (c.municipalities) { %> · <%= c.municipalities %> municipios<% } %></small>
+        <span class="l-card-lead" data-lead>
+          <% if (c.leader) { %>
+            <span class="l-lead-name"><%= c.leader.name %></span>
+            <span class="l-bar"><i style="width:<%= c.leader.pct %>%"></i></span>
+            <em><%= c.leader.pct %>% · <%= c.votes %> votos</em>
+          <% } else { %>
+            <span class="l-lead-empty">Aún sin votos — sé el primero</span>
+          <% } %>
+        </span>
+        <span class="l-arrow" aria-hidden="true">→</span>
+      </a>
+    <% }); %>
+    <p class="l-empty" data-empty hidden>No encontramos distritos con esa búsqueda.</p>
+  </div>
+  <% if (T.districts === 0) { %>
+    <p class="empty">Aún no hay distritos cargados. Corre <code>npm run seed:veracruz</code> o créalos desde /admin.</p>
+  <% } %>
 </section>
 
-<section class="contact-trust" style="border-top:1px solid var(--border); padding-top:32px;">
-  <div class="contact-trust-item">
-    <span class="contact-trust-num">100%</span>
-    <span>Ejercicio ciudadano independiente, sin fines electorales oficiales</span>
+<section class="l-how" id="como">
+  <div class="l-head reveal">
+    <p class="l-eyebrow">Cómo funciona</p>
+    <h2>Tres pasos, un voto por distrito</h2>
   </div>
-  <div class="contact-trust-item">
-    <span class="contact-trust-num">1</span>
-    <span>Voto de opinión por persona y distrito, verificado por cuenta de Google</span>
-  </div>
-  <div class="contact-trust-item">
-    <span class="contact-trust-num">24/7</span>
-    <span>Resultados públicos y actualizados en vivo</span>
+  <div class="l-bento">
+    <article class="l-tile reveal"><span>01</span><h3>Entra con Google</h3><p>Una cuenta, un voto por distrito. Sin formularios largos.</p></article>
+    <article class="l-tile l-tile-wide reveal"><span>02</span><h3>Elige tu distrito federal y local</h3><p>Vota en ambos niveles: cada uno cuenta por separado y se muestra en su propia gráfica.</p></article>
+    <article class="l-tile l-tile-wide reveal"><span>03</span><h3>Mira los resultados en vivo</h3><p>Gráfica, historial de votos y comentarios por candidatura, actualizados cada pocos segundos.</p></article>
+    <article class="l-tile reveal"><span>✓</span><h3>Independiente</h3><p>Opinión ciudadana sin carácter oficial ni vínculo con autoridades electorales.</p></article>
   </div>
 </section>
 
-<section class="landing-section-head">
-  <p class="landing-eyebrow">Lo que hacemos</p>
-  <h2>No solo esta plataforma — construimos a la medida</h2>
-  <p class="landing-section-sub">Cumbre Ciudadana es un ejemplo de lo que podemos construir para gobiernos, empresas, organizaciones o campañas que necesitan escuchar a su gente.</p>
-</section>
-
-<section class="services-grid">
-  <div class="service-card">
-    <div class="service-icon">🗳️</div>
-    <h3>Plataformas de opinión ciudadana</h3>
-    <p>Consultas y boletines de opinión por distrito o región, como Cumbre Ciudadana, con resultados en vivo y un voto verificado por persona.</p>
-  </div>
-  <div class="service-card">
-    <div class="service-icon">📊</div>
-    <h3>Encuestas y paneles de resultados</h3>
-    <p>Formularios de encuesta a la medida con gráficas, historial y exportación de resultados para tu equipo o tus clientes.</p>
-  </div>
-  <div class="service-card">
-    <div class="service-icon">🏛️</div>
-    <h3>Portales institucionales</h3>
-    <p>Sitios con panel de administración propio para que tu equipo publique, edite y controle el contenido sin depender de nosotros.</p>
-  </div>
-  <div class="service-card">
-    <div class="service-icon">🏢</div>
-    <h3>Votación interna para empresas</h3>
-    <p>Elecciones de mesa directiva, encuestas de clima laboral o consultas internas, con acceso controlado y resultados privados.</p>
-  </div>
-</section>
-
-<section class="landing-services">
-  <div class="landing-services-text">
-    <p class="landing-eyebrow">¿Buscas algo así para tu proyecto?</p>
-    <h2>Creamos plataformas de encuestas y participación ciudadana a la medida</h2>
-    <p>
-      Si eres un gobierno municipal, una empresa, una organización o una
-      persona interesada en tener tu propia plataforma de opinión, votación
-      interna o consulta ciudadana — con marca y colores propios, tu dominio,
-      y resultados en vivo — la podemos construir para ti.
-    </p>
-    <div class="landing-services-actions">
-      <a href="/contacto" class="btn btn-vote" style="width:auto;">Contáctanos</a>
-      <span class="muted">También resolvemos dudas sobre la metodología de este ejercicio.</span>
-    </div>
-  </div>
-  <ul class="landing-services-list">
-    <li>Marca, colores y dominio propios</li>
-    <li>Panel de administración a tu medida</li>
-    <li>Resultados en vivo, gráficas y reportes</li>
-    <li>Acceso seguro (Google) y un voto por persona</li>
-    <li>Historial transparente de participación</li>
-  </ul>
+<section class="l-final reveal">
+  <h2>¿Quieres una plataforma así para tu municipio o campaña?</h2>
+  <p>Construimos consultas y paneles de resultados a la medida, con tu marca y dominio.</p>
+  <a href="/contacto" class="l-btn l-btn-primary">Contáctanos <span aria-hidden="true">→</span></a>
 </section>
