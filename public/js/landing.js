@@ -75,7 +75,6 @@
     fetch('/api/estado/resumen').then(function (r) { return r.json(); }).then(function (data) {
       if (!data || !data.totals) return;
       $$('[data-key]').forEach(function (el) { if (data.totals[el.dataset.key] != null) el.textContent = fmt(data.totals[el.dataset.key]); });
-      if (window.CumbreChart) window.CumbreChart.update(data.cards);
       data.cards.forEach(function (d) {
         var card = $('.l-card[data-id="' + d.id + '"]'); if (!card) return;
         var lead = $('[data-lead]', card);

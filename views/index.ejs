@@ -41,18 +41,17 @@
 </section>
 
 
-<section class="l-chart" data-chart aria-label="Participación por distrito">
+<section class="l-chart" data-chart aria-label="Ejemplo de gráfica de participación">
   <div class="c-stage">
     <div class="c-head">
-      <p class="l-eyebrow">En vivo</p>
-      <h2>La participación sube distrito por distrito… hasta su punto máximo</h2>
-      <div class="c-read"><b data-c-num>0</b><span data-c-label>Participación por distrito</span></div>
+      <p class="l-eyebrow">Así se ve en vivo</p>
+      <h2>La participación sube… hasta su punto máximo</h2>
+      <div class="c-read"><b data-c-num>0</b><span data-c-label>Distrito 01</span></div>
     </div>
     <canvas class="c-canvas" aria-hidden="true"></canvas>
     <div class="c-peak" data-c-peak><small>★ Punto máximo</small><strong data-c-pname></strong><em data-c-pval></em></div>
-    <p class="c-hint" aria-hidden="true">Sigue bajando <span>↓</span></p>
+    <p class="c-note">Gráfica de ejemplo · datos ilustrativos</p>
   </div>
-  <script type="application/json" id="chart-data"><%- JSON.stringify(cards.map(function(c){ return { id: c.id, t: c.type, k: c.number, v: c.votes || 0, n: c.cabecera || c.name }; })).replace(/</g, '\\u003c') %></script>
 </section>
 
 <% if (error === 'auth_required') { %>

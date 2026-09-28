@@ -4,8 +4,9 @@
   var cv = sec.querySelector('canvas'), ctx = cv.getContext('2d'), stage = sec.querySelector('.c-stage');
   var numEl = sec.querySelector('[data-c-num]'), labEl = sec.querySelector('[data-c-label]');
   var peakEl = sec.querySelector('[data-c-peak]'), pName = sec.querySelector('[data-c-pname]'), pVal = sec.querySelector('[data-c-pval]');
-  var hint = sec.querySelector('.c-hint');
-  var data = JSON.parse(document.getElementById('chart-data').textContent);
+  // Datos de EJEMPLO (no son votos reales)
+  var SAMPLE = [3,4,6,5,9,14,20,28,24,32,41,55,70,88,100,86,72,60,64,52,40,33,26,20,14,10,8,6,4,3];
+  var data = SAMPLE.map(function (v, i) { return { id: 'e' + i, k: i + 1, v: v, n: 'Distrito ' + (i + 1) }; });
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var clamp = function (x) { return Math.max(0, Math.min(1, x)); };
   var seg = function (p, a, b) { return clamp((p - a) / (b - a)); };
@@ -13,7 +14,7 @@
   var lerp = function (a, b, t) { return a + (b - a) * t; };
   var fmt = function (n) { return Number(n).toLocaleString('es-MX'); };
   var W, H, dpr, L, R, T, B, vals = [], sy = [], M = 2, maxV = 1, peakIdx = 0, peakT = .5, demo = false;
-  var cur = 0, tgt = 0, running = false, crossAt = null, lastIdx = -1, S = 14;
+  var running = false, crossAt = null, lastIdx = -1, S = 14;
 
   function cr(p0, p1, p2, p3, t) {
     return .5 * ((2 * p1) + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t);
@@ -46,7 +47,7 @@
   function layout() {
     dpr = Math.min(devicePixelRatio || 1, 2); W = stage.clientWidth; H = stage.clientHeight;
     cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    L = W * .06; R = W * .94; T = H * .56; B = H * .9;
+    L = W * .06; R = W * .94; T = H * .55; B = H * .9;
   }
   var X = function (f) { return L + f * (R - L); };
   var Y = function (v) { return B - (v / maxV) * (B - T); };
@@ -116,29 +117,29 @@
     var idx = Math.round(t * (data.length - 1));
     if (idx !== lastIdx && data.length) {
       lastIdx = idx; var d = data[idx];
-      labEl.textContent = demo ? 'Participación por distrito' : (d.t === 'federal' ? 'Federal ' : 'Local ') + String(d.k).padStart(2, '0') + ' · ' + d.n;
+      labEl.textContent = 'Distrito ' + String(d.k).padStart(2, '0');
       numEl.textContent = demo ? '—' : fmt(d.v);
     }
-    if (hint) hint.style.opacity = (1 - seg(cur, 0, .05)).toFixed(3);
   }
-  function loop(now) {
+  // Ciclo automático: se dibuja (6.5 s), se queda brillando (4.5 s), se desvanece y empieza de nuevo
+  var t0 = null, DRAW = 6500, HOLD = 4500, FADE = 700;
+  function frame(now) {
     if (!running) return;
-    var dt = Math.min((now - (loop.t || now)) / 1000, .1); loop.t = now;
-    var r = sec.getBoundingClientRect(), span = sec.offsetHeight - innerHeight;
-    tgt = clamp(-r.top / span);
-    cur += (tgt - cur) * (1 - Math.exp(-dt * 9)); if (Math.abs(tgt - cur) < .0004) cur = tgt;
-    draw(seg(cur, .05, .88), now); requestAnimationFrame(loop);
+    if (t0 === null) t0 = now;
+    var e = now - t0, t, alpha = 1;
+    if (e < DRAW) { var x = e / DRAW; t = lerp(x, (1 - Math.cos(Math.PI * x)) / 2, .5); }
+    else if (e < DRAW + HOLD) t = 1;
+    else if (e < DRAW + HOLD + FADE) { t = 1; alpha = 1 - (e - DRAW - HOLD) / FADE; }
+    else { t0 = now; t = 0; crossAt = null; lastIdx = -1; }
+    stage.style.opacity = alpha.toFixed(3);
+    draw(t, now); requestAnimationFrame(frame);
   }
   prep(); layout();
-  if (reduce) { sec.classList.add('is-static'); layout(); crossAt = -1e6; cur = 1; draw(1, 0); }
+  if (reduce) { crossAt = -1e6; draw(1, 0); }
   else new IntersectionObserver(function (es) {
-    var on = es[0].isIntersecting; if (on && !running) { running = true; requestAnimationFrame(loop); } running = on;
-  }, { rootMargin: '10% 0px' }).observe(sec);
+    var on = es[0].isIntersecting;
+    if (on && !running) { running = true; t0 = null; crossAt = null; requestAnimationFrame(frame); }
+    running = on;
+  }, { threshold: .25 }).observe(sec);
   var rt; addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { layout(); if (reduce) draw(1, 0); }, 120); });
-
-  window.CumbreChart = { update: function (cards) {
-    var by = {}; cards.forEach(function (c) { by[c.id] = c; });
-    data.forEach(function (d) { var c = by[d.id]; if (c) d.v = c.votes || 0; });
-    prep();
-  } };
 })();
