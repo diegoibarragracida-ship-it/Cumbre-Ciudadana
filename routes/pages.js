@@ -7,6 +7,20 @@ const Candidate = require('../models/Candidate');
 const Comment = require('../models/Comment');
 const Vote = require('../models/Vote');
 const PARTIES = require('../config/parties');
+const fs = require('fs');
+const path = require('path');
+
+// Logos de partidos: public/img/partidos/<clave>.png|svg|webp|jpg (si falta, la gráfica usa una insignia)
+function partyLogos(keys) {
+  let files = [];
+  try { files = fs.readdirSync(path.join(__dirname, '../public/img/partidos')); } catch (e) {}
+  const out = {};
+  keys.forEach(k => {
+    const f = files.find(x => /\.(png|svg|webp|jpe?g)$/i.test(x) && x.replace(/\.[^.]+$/, '').toLowerCase() === k);
+    if (f) out[k] = '/img/partidos/' + f;
+  });
+  return out;
+}
 
 // Igual que en /admin: la foto se guarda en memoria y se convierte a
 // base64 para meterla directo en Mongo (el disco de Render es efimero).
@@ -71,7 +85,7 @@ router.get('/', async (req, res) => {
   const regions = [...new Set(summary.cards.map(c => c.region))].sort();
   res.render('index', {
     title: 'Veracruz', error: req.query.error,
-    summary, regions, totalCandidates,
+    summary, regions, totalCandidates, logos: partyLogos(['morena', 'pan', 'pri', 'pvem', 'pt']),
     extraCss: ['/css/landing.css'], extraJs: ['/js/chart.js', '/js/landing.js']
   });
 });

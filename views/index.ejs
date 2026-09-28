@@ -41,15 +41,38 @@
 </section>
 
 
-<section class="l-chart" data-chart aria-label="Ejemplo de gráfica de participación">
-  <div class="c-stage">
+<%
+  const BARS = [
+    { k: 'morena', n: 'Morena', ab: 'MORENA', v: 35, c: '#9F2241' },
+    { k: 'pan', n: 'PAN', ab: 'PAN', v: 20, c: '#0055A5' },
+    { k: 'pri', n: 'PRI', ab: 'PRI', v: 14, c: '#0D7137' },
+    { k: 'pvem', n: 'Partido Verde', ab: 'PVEM', v: 9, c: '#1AA64A' },
+    { k: 'pt', n: 'PT', ab: 'PT', v: 6, c: '#D52B1E' }
+  ];
+  const LG = (typeof logos !== 'undefined' && logos) ? logos : {};
+%>
+<section class="l-chart" data-chart aria-label="Ejemplo de gráfica de intención de voto por partido">
+  <div class="c-wrap">
     <div class="c-head">
       <p class="l-eyebrow">Así se ve en vivo</p>
-      <h2>La participación sube… hasta su punto máximo</h2>
-      <div class="c-read"><b data-c-num>0</b><span data-c-label>Distrito 01</span></div>
+      <h2>Quién va arriba en tu distrito</h2>
     </div>
-    <canvas class="c-canvas" aria-hidden="true"></canvas>
-    <div class="c-peak" data-c-peak><small>★ Punto máximo</small><strong data-c-pname></strong><em data-c-pval></em></div>
+    <div class="c-plot">
+      <div class="c-grid" aria-hidden="true">
+        <% [0, 10, 20, 30, 40].forEach(function(y){ %><i style="--y:<%= y %>"><b><%= y %>%</b></i><% }); %>
+      </div>
+      <div class="c-bars">
+        <% BARS.forEach(function(b){ %>
+        <div class="c-col" data-v="<%= b.v %>" style="--c:<%= b.c %>">
+          <div class="c-well"><div class="c-bar"><span class="c-val">0%</span><i class="c-cap"></i><i class="c-ring"></i><i class="c-ring r2"></i></div></div>
+          <div class="c-logo">
+            <span class="c-chip"><% if (LG[b.k]) { %><img src="<%= LG[b.k] %>" alt="<%= b.n %>"><% } else { %><span class="c-badge"><%= b.ab %></span><% } %></span>
+            <small><%= b.n %></small>
+          </div>
+        </div>
+        <% }); %>
+      </div>
+    </div>
     <p class="c-note">Gráfica de ejemplo · datos ilustrativos</p>
   </div>
 </section>

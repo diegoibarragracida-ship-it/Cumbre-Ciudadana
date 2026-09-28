@@ -1,0 +1,3 @@
+Pon aquí los logotipos de los partidos (PNG con fondo transparente, SVG o WebP; cuadrados o casi, unos 256 px).
+Nombres exactos (minúsculas):  morena.png  pan.png  pri.png  pvem.png  pt.png
+Si falta alguno, la gráfica muestra una insignia con las siglas y el color del partido.
