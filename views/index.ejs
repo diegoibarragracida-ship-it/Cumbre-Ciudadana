@@ -41,20 +41,18 @@
 </section>
 
 
-<div class="s-progress" aria-hidden="true"></div>
-
-<% const PH = (typeof photos !== 'undefined' && photos) ? photos : []; %>
-<section class="l-story" data-story <%- PH.length >= 2 ? 'data-mode="photo"' : '' %> aria-label="Veracruz en números">
-  <div class="s-stage">
-    <% if (PH.length >= 2) { %><div class="s-photos" aria-hidden="true"><% PH.forEach(function(src, i){ %><img class="s-photo" src="<%= src %>" alt="" decoding="async"<%- i > 1 ? ' loading="lazy"' : '' %>><% }); %></div><% } %>
-    <canvas class="s-2d" aria-hidden="true"></canvas>
-    <div class="s-big" aria-hidden="true"><b><%= T.districts %></b><span>distritos</span></div>
-    <div class="s-cap"><p class="l-eyebrow">Un estado</p><h2>Cada rincón de Veracruz cuenta</h2><p><%= T.federal %> federales y <%= T.local %> locales, desde la Huasteca hasta los Tuxtlas.</p></div>
-    <div class="s-cap"><% if (PH.length >= 2) { %><p class="l-eyebrow">Un distrito, una voz</p><h2>Desde la sierra hasta la costa</h2><p>Cada distrito tiene su propia historia y su propia gráfica.</p><% } else { %><p class="l-eyebrow">Un distrito, una torre</p><h2>Cada distrito se levanta con su gente</h2><p>La altura de cada torre crece con la participación.</p><% } %></div>
-    <div class="s-cap"><p class="l-eyebrow">En vivo</p><h2><%= PH.length >= 2 ? "Tu voto mueve la gráfica" : "Tu voto la hace más alta" %></h2><p><%= T.votes > 0 ? 'Así va la participación ahora mismo.' : 'Aún no hay votos: sé el primero en votar.' %></p></div>
-    <p class="s-hint" aria-hidden="true">Sigue bajando <span>↓</span></p>
+<section class="l-chart" data-chart aria-label="Participación por distrito">
+  <div class="c-stage">
+    <div class="c-head">
+      <p class="l-eyebrow">En vivo</p>
+      <h2>La participación sube distrito por distrito… hasta su punto máximo</h2>
+      <div class="c-read"><b data-c-num>0</b><span data-c-label>Participación por distrito</span></div>
+    </div>
+    <canvas class="c-canvas" aria-hidden="true"></canvas>
+    <div class="c-peak" data-c-peak><small>★ Punto máximo</small><strong data-c-pname></strong><em data-c-pval></em></div>
+    <p class="c-hint" aria-hidden="true">Sigue bajando <span>↓</span></p>
   </div>
-  <script type="application/json" id="story-data"><%- JSON.stringify(cards.map(function(c){ return { id: c.id, t: c.type, v: c.votes || 0, c: c.leader ? c.leader.color : null, n: c.cabecera || c.name }; })).replace(/</g, '\\u003c') %></script>
+  <script type="application/json" id="chart-data"><%- JSON.stringify(cards.map(function(c){ return { id: c.id, t: c.type, k: c.number, v: c.votes || 0, n: c.cabecera || c.name }; })).replace(/</g, '\\u003c') %></script>
 </section>
 
 <% if (error === 'auth_required') { %>
