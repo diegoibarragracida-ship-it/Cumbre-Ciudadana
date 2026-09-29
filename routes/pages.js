@@ -116,7 +116,7 @@ router.get('/distrito/:id', async (req, res) => {
       if (v) myVote = v.candidate.toString();
     }
 
-    res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error });
+    res.render('district', { title: district.name, district, candidates, myVote, parties: PARTIES, error: req.query.error, extraCss: ['/css/landing.css'], extraJs: ['/js/results-bars.js'] });
   } catch (err) {
     console.error(err);
     res.status(404).send('Distrito no encontrado');

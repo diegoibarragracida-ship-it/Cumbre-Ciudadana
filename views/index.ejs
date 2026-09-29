@@ -43,15 +43,20 @@
 
 <%
   const BARS = [
-    { k: 'morena', n: 'Morena', ab: 'MORENA', v: 35, c: '#9F2241' },
-    { k: 'pan', n: 'PAN', ab: 'PAN', v: 20, c: '#0055A5' },
-    { k: 'pri', n: 'PRI', ab: 'PRI', v: 14, c: '#0D7137' },
-    { k: 'pvem', n: 'Partido Verde', ab: 'PVEM', v: 9, c: '#1AA64A' },
-    { k: 'pt', n: 'PT', ab: 'PT', v: 6, c: '#D52B1E' }
+    { k: 'morena', n: 'Morena', ab: 'MORENA', v: 30, c: '#9F2241' },
+    { k: 'mc', n: 'Mov. Ciudadano', ab: 'MC', v: 19, c: '#FF6D02' },
+    { k: 'pan', n: 'PAN', ab: 'PAN', v: 16, c: '#0055A5' },
+    { k: 'paz', n: 'PAZ', ab: 'PAZ', v: 12, c: '#7B2FBE' },
+    { k: 'pri', n: 'PRI', ab: 'PRI', v: 10, c: '#0D7137' },
+    { k: 'pvem', n: 'Partido Verde', ab: 'PVEM', v: 8, c: '#1AA64A' },
+    { k: 'pt', n: 'PT', ab: 'PT', v: 5, c: '#D52B1E' }
   ];
   const LG = (typeof logos !== 'undefined' && logos) ? logos : {};
+  const maxV = Math.max(10, Math.ceil(Math.max.apply(null, BARS.map(b => b.v)) * 1.2 / 5) * 5);
+  const gStep = maxV <= 20 ? 5 : (maxV <= 60 ? 10 : 20);
+  const gTicks = []; for (let y = 0; y <= maxV + 0.001; y += gStep) gTicks.push(Math.round(y));
 %>
-<section class="l-chart" data-chart aria-label="Ejemplo de gráfica de intención de voto por partido">
+<section class="l-chart landing-chart" data-chart aria-label="Ejemplo de gráfica de intención de voto por partido">
   <div class="c-wrap">
     <div class="c-head">
       <p class="l-eyebrow">Así se ve en vivo</p>
@@ -59,9 +64,9 @@
     </div>
     <div class="c-plot">
       <div class="c-grid" aria-hidden="true">
-        <% [0, 10, 20, 30, 40].forEach(function(y){ %><i style="--y:<%= y %>"><b><%= y %>%</b></i><% }); %>
+        <% gTicks.forEach(function(y){ %><i style="--y:<%= (y / maxV * 100).toFixed(2) %>"><b><%= y %>%</b></i><% }); %>
       </div>
-      <div class="c-bars">
+      <div class="c-bars" style="--cols:<%= BARS.length %>">
         <% BARS.forEach(function(b){ %>
         <div class="c-col" data-v="<%= b.v %>" style="--c:<%= b.c %>">
           <div class="c-well"><div class="c-bar"><span class="c-val">0%</span><i class="c-cap"></i><i class="c-ring"></i><i class="c-ring r2"></i></div></div>

@@ -4,10 +4,11 @@
   var wrap = sec.querySelector('.c-wrap'), cols = [].slice.call(sec.querySelectorAll('.c-col'));
   var reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   var clamp = function (x) { return Math.max(0, Math.min(1, x)); };
-  var MAXV = 40, STEP = 1500, RISE = 1300, HOLD = 4200, FADE = 700, running = false, t0 = null;
+  var MAXV, STEP = 1500, RISE = 1300, HOLD = 4200, FADE = 700, running = false, t0 = null;
   var items = cols.map(function (c) {
     return { el: c, bar: c.querySelector('.c-bar'), val: c.querySelector('.c-val'), v: +c.dataset.v, hit: false };
   });
+  MAXV = Math.max(10, Math.ceil(Math.max.apply(null, items.map(function (it) { return it.v; }).concat(1)) * 1.2 / 5) * 5);
   var total = STEP * (items.length - 1) + RISE;
 
   function reset() {
