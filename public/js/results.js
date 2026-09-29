@@ -23,14 +23,13 @@
   let pieChart = null;
 
   async function fetchResults() {
-    if (!container) return;
     try {
       const res = await fetch(`/api/distrito/${window.DISTRICT_ID}/resultados`);
       const data = await res.json();
-      render(data);
+      if (container) render(data);
       renderPie(data);
     } catch (err) {
-      container.innerHTML = '<p class="empty">No se pudieron cargar los resultados.</p>';
+      if (container) container.innerHTML = '<p class="empty">No se pudieron cargar los resultados.</p>';
     }
   }
 

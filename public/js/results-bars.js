@@ -8,13 +8,31 @@
   var current = null, built = false, MAXV = 10;
 
   function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  // Colores mas serios: baja saturacion y ajusta la luz a un rango sobrio (no neon, no apagado del todo).
+  function muted(hex) {
+    hex = (hex || '#3EE6D0').replace('#', '');
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    var r = parseInt(hex.substr(0, 2), 16) / 255, g = parseInt(hex.substr(2, 2), 16) / 255, b = parseInt(hex.substr(4, 2), 16) / 255;
+    var max = Math.max(r, g, b), min = Math.min(r, g, b), h = 0, s = 0, l = (max + min) / 2;
+    if (max !== min) {
+      var d = max - min; s = l > .5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = (g - b) / d + (g < b ? 6 : 0); else if (max === g) h = (b - r) / d + 2; else h = (r - g) / d + 4;
+      h /= 6;
+    }
+    s = Math.min(s, .5); l = Math.max(.32, Math.min(l, .48));
+    function h2 (p, q, t) { if (t < 0) t += 1; if (t > 1) t -= 1; if (t < 1 / 6) return p + (q - p) * 6 * t; if (t < .5) return q; if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6; return p; }
+    var q = l < .5 ? l * (1 + s) : l + s - l * s, p = 2 * l - q;
+    var rr = h2(p, q, h + 1 / 3), gg = h2(p, q, h), bb = h2(p, q, h - 1 / 3);
+    function hx (x) { var v = Math.round(x * 255).toString(16); return v.length === 1 ? '0' + v : v; }
+    return '#' + hx(rr) + hx(gg) + hx(bb);
+  }
   function initials(name) {
     return (name || '?').replace(/[^\p{L}0-9 ]/gu, '').trim().split(/\s+/).slice(0, 2)
       .map(function (w) { return w[0]; }).join('').toUpperCase() || '?';
   }
-  function color(c, i) { return (c.partyColors && c.partyColors[0]) || FALLBACK[i % FALLBACK.length]; }
+  function color(c, i) { return muted((c.partyColors && c.partyColors[0]) || FALLBACK[i % FALLBACK.length]); }
   function grad(c, i) {
-    var cols = (c.partyColors && c.partyColors.length) ? c.partyColors : [color(c, i)];
+    var cols = ((c.partyColors && c.partyColors.length) ? c.partyColors : [color(c, i)]).map(muted);
     if (cols.length === 1) return cols[0];
     var step = 100 / cols.length;
     return 'linear-gradient(180deg, ' + cols.map(function (x, k) { return x + ' ' + (k * step).toFixed(0) + '%'; }).join(', ') + ')';
@@ -28,10 +46,11 @@
     barsEl.style.setProperty('--cols', sorted.length || 1);
     barsEl.innerHTML = sorted.map(function (c, i) {
       var pct = total ? (c.votes / total * 100) : 0;
+      var photo = c.photoUrl || '/img/default-avatar.svg';
       return '<div class="c-col" data-id="' + c.id + '" data-pct="' + pct.toFixed(2) + '" data-v="' + c.votes + '" style="--c:' + color(c, i) + '">' +
         '<div class="c-well"><div class="c-bar" style="height:0%;background:' + grad(c, i) + '">' +
           '<span class="c-val">0%</span><i class="c-cap"></i><i class="c-ring"></i><i class="c-ring r2"></i></div></div>' +
-        '<div class="c-logo"><span class="c-chip"><span class="c-badge">' + esc(initials(c.name)) + '</span></span>' +
+        '<div class="c-logo"><span class="c-chip c-chip-photo"><img src="' + esc(photo) + '" alt="' + esc(c.name) + '" onerror="this.src=\'/img/default-avatar.svg\'"></span>' +
           '<small>' + esc(c.name.split(' ')[0]) + '<br>' + esc(c.party) + '</small></div></div>';
     }).join('') || '<p class="empty">Aún no hay candidatos con votos en este distrito.</p>';
   }
